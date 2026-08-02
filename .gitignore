@@ -1,0 +1,4 @@
+data/
+_development/
+*.log
+*.tmp
