@@ -1,10 +1,10 @@
 # TrackerRadar Alpha – Status
 
-Stand: 2026-08-03, 10:51 Uhr Europe/Berlin
+Stand: 2026-08-03, 11:41 Uhr Europe/Berlin
 
 ## Ergebnis
 
-TrackerRadar 0.2.2-alpha ist als portable Windows-App lauffähig und wurde mit einem vollständigen UI-Konsistenzpass für Logos, Karten, Navigation und Buttons überarbeitet.
+TrackerRadar `0.3.0-alpha` ist als portable, lokale und weiterhin vollständig read-only arbeitende Windows-App lauffähig.
 
 - Startdatei: `Start-TrackerRadar.cmd`
 - Installation: nicht erforderlich
@@ -12,40 +12,60 @@ TrackerRadar 0.2.2-alpha ist als portable Windows-App lauffähig und wurde mit e
 - Cloud/Telemetrie: keine
 - Zusätzliche Runtime: keine Installation notwendig
 
+## Neu in 0.3
+
+- Lokale Baseline für bekannte Verbindungen und Autostarts
+- Erkennung neuer Verbindungen ohne wiederholte Falschmeldung bei jedem Scan
+- Unterscheidung zwischen `Neu`, `Wieder aktiv`, `Aktiv` und `Baseline`
+- Domainauflösung über den lokalen Windows-DNS-Cache
+- Verständliche Anbieter- und Zweckhinweise für bekannte Dienste
+- Erkennung neuer, geänderter und entfernter üblicher Autostarts
+- Begrenzter lokaler Sieben-Tage-Verlauf als JSONL
+- Verlaufsspeicherung nur bei Änderungen oder spätestens alle 15 Minuten
+- Funktionierende Ansichten: Übersicht, Aktivitäten, Befunde und Verlauf
+- Detaillierte Aktivitätsansicht mit Domain, Anbieter, Zweck, IP, Port, Pfad und erster Erkennung
+
 ## Verifizierte Funktionen
 
-- WPF-Oberfläche startet fehlerfrei
-- Aktive externe TCP-Verbindungen werden erkannt
-- Verbindungen werden Prozess, PID, Ziel-IP, Port und Programmpfad zugeordnet
+- Aktive externe TCP-Verbindungen werden Prozess und Programmpfad zugeordnet
+- Lokale Baseline wird angelegt und fortgeführt
+- Dieselbe bekannte Verbindung wird nicht erneut als neu gemeldet
+- Neue Verbindung wurde im Test korrekt erkannt
+- DNS-Ziel `api.anthropic.com` wurde korrekt als Anthropic/KI-Cloud-Dienst erklärt
 - Autostarts werden aus Registry und Startup-Ordnern gelesen
-- Auffällige Script-Hosts und ungewöhnliche Ausführungspfade werden bewertet
-- Befunde werden gebündelt angezeigt
-- JSON-Bericht wird lokal erzeugt
-- Automatische Aktualisierung alle 20 Sekunden
-- Doppelklick-Details für Aktivitäten und Befunde
+- JSON-Bericht und begrenzter Verlauf werden lokal erzeugt
+- Navigation schaltet jeweils exakt eine Ansicht sichtbar
+- Automatische Aktualisierung alle 30 Sekunden
 
-## Letzter Test
+## Letzter Regressionstest
 
-- Selbsttest: PASS
-- GUI-Start: PASS
+- Kern-Selbsttest: **8/8 PASS**
+- UI-Navigation: **4/4 PASS**
+- GUI-Start: **PASS**
 - GUI-Fehlerausgabe: leer
-- Working Set nach 10 Sekunden: 177,2 MB
-- Privater Speicher nach 10 Sekunden: 159,8 MB
-- CPU-Zeit nach 10 Sekunden: 1,89 Sekunden
-- Live-Scan: zuletzt rund 0,4 Sekunden
-- Markenassets: optimierte PNG-Dateien, zusammen etwa 111 KB
+- Working Set nach 10 Sekunden: **183,4 MB**
+- Privater Speicher nach 10 Sekunden: **167,3 MB**
+- CPU-Zeit nach 10 Sekunden: **2,16 Sekunden**
+- Live-Scan: zuletzt rund **0,6 Sekunden**
+
+## Portable-Paket
+
+- Datei: `dist/TrackerRadar-0.3.0-alpha-portable.zip`
+- Größe: 203.637 Bytes
+- SHA-256: `262F255695F7591CD3CC3040911146D8E6A52AAB0819D70728F032049FD76BDB`
 
 ## Bewertung
 
-Die Alpha ist für die manuelle Endnutzerprüfung geeignet. Mit den echten Markenassets liegt der private Speicher bei rund 160 MB und damit weiterhin innerhalb des bewusst schlanken Alpha-Ziels. Eine spätere kompilierte Version wird separat bewertet; dafür werden noch keine Leistungsversprechen gemacht.
+Version 0.3 liefert deutlich mehr Endnutzen als die reine Momentaufnahme aus 0.2.2. Der private Speicher stieg durch vier echte Ansichten, Baseline und Verlauf um etwa 7–8 MB. Eine weitere Demontage der Oberfläche für wenige Megabyte wäre aktuell unverhältnismäßig. Die App bleibt ohne Electron, Datenbank, Hintergrunddienst oder Cloud bewusst schlank.
 
 ## Noch nicht enthalten
 
 - Vollständige Datei-Leseüberwachung mit Prozesszuordnung
 - Aktive Firewall-Blockierung
 - Deaktivieren oder Entfernen von Autostarts
-- Windows-Hardening und Rollback
+- Change Vault und Rollback
+- Windows-Hardening
 - Signierter Installer
 - Hintergrunddienst oder eigener Treiber
 
-Diese Punkte werden erst nach der Nutzerprüfung priorisiert, damit das Produkt schlank bleibt und nicht überentwickelt wird.
+Diese Funktionen bleiben für spätere, getrennte Sprints vorgesehen.

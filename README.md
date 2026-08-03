@@ -10,19 +10,24 @@ TrackerRadar shows which applications maintain external TCP connections, where t
 
 ## Status
 
-**Version:** `0.2.2-alpha`  
-**State:** local prototype, not a public security release  
+**Version:** `0.3.0-alpha`  
+**State:** local read-only prototype, not a public security release  
 **Tested on:** Windows 11 Pro with Windows PowerShell 5.1
 
 ## Current capabilities
 
 - Map active external TCP connections to processes
-- Show application, PID, target IP, port and executable path
+- Resolve domains from the local Windows DNS cache when available
+- Explain common providers and purposes such as Microsoft, Apple, Anthropic, OpenAI, Google and cloud delivery services
+- Establish a local baseline and highlight newly observed connections
+- Detect new, changed or removed common startup entries
+- Maintain a bounded local seven-day history without a database
+- Provide functional Overview, Activities, Findings and History views
+- Show application, PID, domain or IP, provider, port, executable path and first-seen time
 - Highlight script hosts and unusual execution locations
-- Inventory common Registry and Startup-folder persistence entries
 - Group findings instead of producing an alert flood
 - Write a local JSON report to `data\latest-scan.json`
-- Refresh automatically every 20 seconds
+- Refresh automatically every 30 seconds
 - Operate without account, cloud backend or product telemetry
 
 ## Quick start
@@ -41,7 +46,7 @@ PowerShell execution is limited to the scripts contained in this project. Tracke
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Test-TrackerRadar-App.ps1
 ```
 
-The test checks the self-test, live snapshot, WPF launch, GUI errors and memory usage. Machine-specific results are stored in the ignored `data/` directory.
+The test checks the eight-part core self-test, all four navigation views, WPF launch, GUI errors and memory usage. Machine-specific results are stored in the ignored `data/` directory.
 
 ## Portable package
 
@@ -53,7 +58,9 @@ This creates an ignored `dist/` folder containing the portable ZIP and a matchin
 
 ## Current limitations
 
-- It is a momentary view of active external TCP connections, not packet capture.
+- Each scan is still a momentary view of active external TCP connections, not packet capture.
+- Domain names are taken from the local Windows DNS cache and are not always available.
+- Provider and purpose labels are explanatory heuristics, not proof of ownership or intent.
 - It does not decrypt HTTPS traffic.
 - Complete per-process file-read monitoring is not implemented yet.
 - It does not block, delete or modify Windows components.
@@ -76,4 +83,4 @@ Copyright © 2026 SC LABS. All rights reserved. No open-source license has been 
 
 ## Kurzbeschreibung auf Deutsch
 
-TrackerRadar ist eine portable, lokale Windows-App im SC-LABS-Design. Sie zeigt aktive externe Verbindungen, ordnet sie Programmen zu und weist auf auffällige Startpfade oder Autostarts hin. Die aktuelle Alpha beobachtet ausschließlich und verändert das System nicht.
+TrackerRadar ist eine portable, lokale Windows-App im SC-LABS-Design. Sie zeigt aktive externe Verbindungen, erklärt bekannte Ziele, erkennt neue Aktivitäten gegenüber einer lokalen Baseline und führt einen begrenzten Sieben-Tage-Verlauf. Die aktuelle Alpha beobachtet ausschließlich und verändert das System nicht.

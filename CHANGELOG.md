@@ -8,6 +8,25 @@ All notable changes to TrackerRadar are documented here.
 - Safe per-application blocking and rollback
 - Compiled Windows build and signed installer
 
+## [0.3.0-alpha] - 2026-08-03
+
+### Added
+- Persistent local baseline for first-seen connection detection
+- Local DNS-cache domain resolution and understandable provider context
+- Detection of new, changed and removed common startup entries
+- Bounded seven-day JSONL history with change-based recording
+- Functional Overview, Activities, Findings and History navigation
+- Detailed activity view with domain, provider, purpose, IP and first-seen time
+
+### Changed
+- Automatic refresh interval increased to 30 seconds to reduce background work
+- Self-test expanded from five to eight checks
+
+### Verified
+- Baseline does not repeatedly flag the same connection as new
+- History is written only when state changes or after 15 minutes
+- GUI launch and local report generation pass
+
 ## [0.2.2-alpha] - 2026-08-03
 
 ### Changed
