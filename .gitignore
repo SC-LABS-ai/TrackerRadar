@@ -1,4 +1,8 @@
 data/
 _development/
+dist/
 *.log
 *.tmp
+*.user
+Thumbs.db
+.DS_Store

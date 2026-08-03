@@ -1,49 +1,79 @@
-# TrackerRadar Alpha
+<p align="center">
+  <img src="assets/branding/trackerradar-logo.png" width="220" alt="TrackerRadar logo">
+</p>
 
-TrackerRadar ist eine schlanke, lokale Windows-App im SC-LABS-Stil. Sie zeigt aktive externe Netzwerkverbindungen, ordnet sie laufenden Programmen zu und weist auf auffällige Ausführungspfade oder Autostarts hin.
+# TrackerRadar
 
-## Start
+**Local-first Windows visibility for unexpected application behaviour.**
 
-Doppelklick auf:
+TrackerRadar shows which applications maintain external TCP connections, where they connect, and whether they start from unusual locations or register persistent startup entries. The interface is intentionally simple and the current alpha is read-only.
 
-`Start-TrackerRadar.cmd`
+## Status
 
-Es ist keine Installation erforderlich.
+**Version:** `0.2.1-alpha`  
+**State:** local prototype, not a public security release  
+**Tested on:** Windows 11 Pro with Windows PowerShell 5.1
 
-## Was die Alpha kann
+## Current capabilities
 
-- Aktive externe TCP-Verbindungen pro Anwendung anzeigen
-- Prozess, PID, Ziel-IP, Zielport und Programmpfad zuordnen
-- Script-Hosts und Programme aus ungewöhnlichen Ordnern hervorheben
-- Autostarts aus Registry und Startup-Ordnern prüfen
-- Wenige, gebündelte Befunde statt Warnungsflut anzeigen
-- Lokalen JSON-Bericht unter `data\latest-scan.json` erzeugen
-- Automatisch alle 20 Sekunden aktualisieren
-- Vollständig lokal arbeiten, ohne Cloud oder eigene Telemetrie
+- Map active external TCP connections to processes
+- Show application, PID, target IP, port and executable path
+- Highlight script hosts and unusual execution locations
+- Inventory common Registry and Startup-folder persistence entries
+- Group findings instead of producing an alert flood
+- Write a local JSON report to `data\latest-scan.json`
+- Refresh automatically every 20 seconds
+- Operate without account, cloud backend or product telemetry
 
-## Was die Alpha bewusst noch nicht kann
+## Quick start
 
-- Datei-Lesezugriffe vollständig einem Prozess zuordnen
-- HTTPS-Inhalte entschlüsseln
-- Programme automatisch blockieren oder löschen
-- Windows-Komponenten verändern
-- Malware oder Backdoors garantiert erkennen
+No installation is required for the alpha.
 
-## Bedienung
+1. Download or clone the repository.
+2. Double-click `Start-TrackerRadar.cmd`.
+3. Select **Jetzt pruefen** to create a fresh local snapshot.
 
-- `Jetzt pruefen`: sofort neue Momentaufnahme erstellen
-- Doppelklick auf eine Aktivität: technische Details anzeigen
-- Doppelklick auf einen Befund: Begründung anzeigen
-- `Lokalen Bericht oeffnen`: letzten JSON-Bericht im Explorer markieren
+PowerShell execution is limited to the scripts contained in this project. TrackerRadar does not request silent elevation.
 
-## Technische Entscheidung
+## Test
 
-Die Alpha ist portable und nutzt vorhandenes Windows PowerShell 5.1 sowie WPF. Dadurch werden keine zusätzlichen Frameworks oder Browser-Runtimes installiert. Nach erfolgreicher Nutzerprüfung kann daraus eine kompilierte und signierte Installer-Version entstehen.
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Test-TrackerRadar-App.ps1
+```
 
-## Tests
+The test checks the self-test, live snapshot, WPF launch, GUI errors and memory usage. Machine-specific results are stored in the ignored `data/` directory.
 
-Automatischer Test:
+## Portable package
 
-`powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Test-TrackerRadar-App.ps1`
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Build-Portable.ps1
+```
 
-Testergebnisse liegen im Ordner `data`.
+This creates an ignored `dist/` folder containing the portable ZIP and a matching SHA-256 file. The package is only created after a successful self-test.
+
+## Current limitations
+
+- It is a momentary view of active external TCP connections, not packet capture.
+- It does not decrypt HTTPS traffic.
+- Complete per-process file-read monitoring is not implemented yet.
+- It does not block, delete or modify Windows components.
+- It is not a replacement for antivirus, EDR or incident response.
+- It cannot guarantee detection of every tracker, malware sample or backdoor.
+
+## Privacy and security
+
+See [PRIVACY.md](PRIVACY.md) and [SECURITY.md](SECURITY.md). Scan data and local development files are excluded from Git.
+
+## Public release preparation
+
+The repository is structured for later GitHub publication, but no remote is configured and no public push has been performed. See [PUBLIC-RELEASE-CHECKLIST.md](PUBLIC-RELEASE-CHECKLIST.md).
+
+## Rights
+
+Copyright © 2026 SC LABS. All rights reserved. No open-source license has been selected yet. See [NOTICE.md](NOTICE.md).
+
+---
+
+## Kurzbeschreibung auf Deutsch
+
+TrackerRadar ist eine portable, lokale Windows-App im SC-LABS-Design. Sie zeigt aktive externe Verbindungen, ordnet sie Programmen zu und weist auf auffällige Startpfade oder Autostarts hin. Die aktuelle Alpha beobachtet ausschließlich und verändert das System nicht.

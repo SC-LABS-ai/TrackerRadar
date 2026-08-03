@@ -221,7 +221,7 @@ function Get-Snapshot {
 
     $snapshot = [pscustomobject]@{
         Product = 'TrackerRadar Alpha'
-        Version = '0.2.0-alpha'
+        Version = '0.2.1-alpha'
         Timestamp = (Get-Date).ToString('o')
         DurationMs = [int]((Get-Date) - $started).TotalMilliseconds
         ExternalConnections = $connections.Count
@@ -284,7 +284,7 @@ Add-Type -AssemblyName PresentationFramework, PresentationCore, WindowsBase
 [xml]$xaml = @'
 <Window xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="TrackerRadar Alpha" Width="1180" Height="720" MinWidth="960" MinHeight="620"
+        Title="TrackerRadar 0.2.1 Alpha | SC LABS" Width="1180" Height="720" MinWidth="960" MinHeight="620"
         WindowStartupLocation="CenterScreen" Background="#071018" Foreground="#ECF3F7"
         FontFamily="Segoe UI" FontSize="14">
     <Window.Resources>
@@ -342,12 +342,19 @@ Add-Type -AssemblyName PresentationFramework, PresentationCore, WindowsBase
                     <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
                 <StackPanel>
-                    <TextBlock Text="SC" FontSize="34" FontWeight="Bold" Foreground="{StaticResource Accent}"/>
-                    <TextBlock Text="L  A  B  S" FontSize="10" Foreground="#91A5B2"/>
-                    <TextBlock Margin="0,24,0,0" FontSize="22" FontWeight="SemiBold">
-                        <Run Text="Tracker"/><Run Text="Radar" Foreground="{StaticResource Accent}"/>
-                    </TextBlock>
-                    <TextBlock Text="Sieh, was Programme wirklich tun." Margin="0,5,0,0" Foreground="#8EA2AF" TextWrapping="Wrap"/>
+                    <StackPanel Orientation="Horizontal">
+                        <Border Width="44" Height="44" CornerRadius="9" Background="#0B1924" BorderBrush="#284657" BorderThickness="1" Padding="3">
+                            <Image x:Name="ScLabsLogo" Stretch="Uniform"/>
+                        </Border>
+                        <StackPanel Margin="10,6,0,0">
+                            <TextBlock Text="SC LABS" FontSize="16" FontWeight="Bold" Foreground="#ECF3F7"/>
+                            <TextBlock Text="PRODUCT SERIES" FontSize="9" Foreground="#718B99"/>
+                        </StackPanel>
+                    </StackPanel>
+                    <Border Margin="0,24,0,0" Height="132" CornerRadius="12" Background="#06101A" BorderBrush="#234455" BorderThickness="1" Padding="7">
+                        <Image x:Name="TrackerRadarLogo" Stretch="Uniform"/>
+                    </Border>
+                    <TextBlock Text="Sieh, was Programme wirklich tun." Margin="0,10,0,0" Foreground="#8EA2AF" TextWrapping="Wrap"/>
                 </StackPanel>
                 <StackPanel Grid.Row="1" Margin="0,34,0,0">
                     <Border Background="#102630" CornerRadius="8" Padding="12">
@@ -435,7 +442,7 @@ Add-Type -AssemblyName PresentationFramework, PresentationCore, WindowsBase
             <Grid Grid.Row="3" Margin="0,13,0,0">
                 <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
                 <TextBlock x:Name="StatusText" Text="Bereit" Foreground="#8DA1AD"/>
-                <TextBlock Grid.Column="1" Text="TrackerRadar 0.2 Alpha" Foreground="#627985"/>
+                <TextBlock Grid.Column="1" Text="TrackerRadar 0.2.1 Alpha · SC LABS" Foreground="#627985"/>
             </Grid>
         </Grid>
     </Grid>
@@ -457,6 +464,29 @@ $findingsCount = $window.FindName('FindingsCount')
 $criticalCount = $window.FindName('CriticalCount')
 $statusText = $window.FindName('StatusText')
 $headline = $window.FindName('Headline')
+$scLabsLogo = $window.FindName('ScLabsLogo')
+$trackerRadarLogo = $window.FindName('TrackerRadarLogo')
+
+function Set-UiImage {
+    param(
+        [Parameter(Mandatory)]$Control,
+        [Parameter(Mandatory)][string]$Path
+    )
+    if (-not (Test-Path -LiteralPath $Path)) { return $null }
+
+    $bitmap = New-Object System.Windows.Media.Imaging.BitmapImage
+    $bitmap.BeginInit()
+    $bitmap.CacheOption = [System.Windows.Media.Imaging.BitmapCacheOption]::OnLoad
+    $bitmap.UriSource = New-Object System.Uri($Path)
+    $bitmap.EndInit()
+    $bitmap.Freeze()
+    $Control.Source = $bitmap
+    return $bitmap
+}
+
+$scLabsBitmap = Set-UiImage -Control $scLabsLogo -Path (Join-Path $script:Root 'assets\branding\sclabs-mark.png')
+$trackerRadarBitmap = Set-UiImage -Control $trackerRadarLogo -Path (Join-Path $script:Root 'assets\branding\trackerradar-logo.png')
+if ($trackerRadarBitmap) { $window.Icon = $trackerRadarBitmap }
 
 function Update-Ui {
     try {

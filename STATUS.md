@@ -1,10 +1,10 @@
 # TrackerRadar Alpha – Status
 
-Stand: 2026-08-02, 23:08 Uhr Europe/Berlin
+Stand: 2026-08-03, 10:51 Uhr Europe/Berlin
 
 ## Ergebnis
 
-TrackerRadar 0.2.0-alpha ist als portable Windows-App lauffähig.
+TrackerRadar 0.2.1-alpha ist als portable Windows-App lauffähig und mit den aktuellen SC-LABS- und TrackerRadar-Markenassets ausgestattet.
 
 - Startdatei: `Start-TrackerRadar.cmd`
 - Installation: nicht erforderlich
@@ -29,14 +29,15 @@ TrackerRadar 0.2.0-alpha ist als portable Windows-App lauffähig.
 - Selbsttest: PASS
 - GUI-Start: PASS
 - GUI-Fehlerausgabe: leer
-- Working Set nach 10 Sekunden: 162,8 MB
-- Privater Speicher nach 10 Sekunden: 148,8 MB
-- CPU-Zeit nach 10 Sekunden: 1,59 Sekunden
+- Working Set nach 10 Sekunden: 177,2 MB
+- Privater Speicher nach 10 Sekunden: 159,8 MB
+- CPU-Zeit nach 10 Sekunden: 1,89 Sekunden
 - Live-Scan: zuletzt rund 0,4 Sekunden
+- Markenassets: optimierte PNG-Dateien, zusammen etwa 111 KB
 
 ## Bewertung
 
-Die Alpha ist für die manuelle Endnutzerprüfung geeignet. Der private Speicher erfüllt das Ziel von ungefähr 150 MB; der Working Set liegt etwas darüber, aber deutlich unter der ersten Version mit etwa 196 MB.
+Die Alpha ist für die manuelle Endnutzerprüfung geeignet. Mit den echten Markenassets liegt der private Speicher bei rund 160 MB und damit weiterhin innerhalb des bewusst schlanken Alpha-Ziels. Eine spätere kompilierte Version wird separat bewertet; dafür werden noch keine Leistungsversprechen gemacht.
 
 ## Noch nicht enthalten
 
