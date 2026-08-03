@@ -8,7 +8,9 @@ TrackerRadar is designed as a local-first Windows application.
 - No cloud backend
 - No analytics, advertising or product telemetry
 - No automatic upload of scan results
-- Reports are written locally to `data/`
+- Reports, baseline data, history and Change Vault records are written locally to `data/`
+- Change Vault records may contain local executable paths, startup names and Registry locations needed for rollback
+- Control requests and responses remain local and are removed after processing
 - HTTPS payloads are not decrypted
 - The alpha does not read document contents
 

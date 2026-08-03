@@ -1,5 +1,5 @@
 param(
-    [string]$Version = '0.3.0-alpha'
+    [string]$Version = '0.4.0-alpha'
 )
 
 $ErrorActionPreference = 'Stop'
@@ -10,7 +10,11 @@ $zip = Join-Path $dist "TrackerRadar-$Version-portable.zip"
 $hashFile = Join-Path $dist "TrackerRadar-$Version-SHA256.txt"
 
 & powershell.exe -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -File (Join-Path $root 'TrackerRadar.App.ps1') -SelfTest
-if ($LASTEXITCODE -ne 0) { throw 'Self-test failed. Package was not created.' }
+if ($LASTEXITCODE -ne 0) { throw 'Monitoring self-test failed. Package was not created.' }
+& powershell.exe -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -File (Join-Path $root 'TrackerRadar.Control.ps1') -SelfTest
+if ($LASTEXITCODE -ne 0) { throw 'Control self-test failed. Package was not created.' }
+& powershell.exe -NoLogo -NoProfile -STA -ExecutionPolicy Bypass -File (Join-Path $root 'TrackerRadar.App.ps1') -UiSmokeTest
+if ($LASTEXITCODE -ne 0) { throw 'UI smoke test failed. Package was not created.' }
 
 if (Test-Path -LiteralPath $stage) { Remove-Item -LiteralPath $stage -Recurse -Force }
 if (Test-Path -LiteralPath $zip) { Remove-Item -LiteralPath $zip -Force }
@@ -18,6 +22,7 @@ New-Item -ItemType Directory -Path $stage -Force | Out-Null
 
 $files = @(
     'TrackerRadar.App.ps1',
+    'TrackerRadar.Control.ps1',
     'Start-TrackerRadar.cmd',
     'Test-TrackerRadar-App.ps1',
     'README.md',

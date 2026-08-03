@@ -8,6 +8,32 @@ All notable changes to TrackerRadar are documented here.
 - Safe per-application blocking and rollback
 - Compiled Windows build and signed installer
 
+## [0.4.0-alpha] - 2026-08-03
+
+### Added
+- Explicit per-application outbound blocking through Windows Firewall
+- Safe disable action for selected startup findings
+- Local Change Vault with action status, target and timestamp
+- Reversible firewall, Registry startup and Startup-folder changes
+- Separate control helper without persistent elevation
+- Fifth navigation view for approved changes and rollback
+
+### Safety
+- Every control action requires a confirmation dialog
+- Protected actions request normal Windows UAC only when executed
+- Change records are written as Pending before the Windows action
+- Registry value kind is preserved for exact rollback
+- No automatic blocking, deletion or Windows component removal
+
+### Verified
+- Monitoring core: 8/8 passed
+- Control helper: 8/8 passed
+- UI navigation: 5/5 passed
+- File startup disable and undo: passed
+- Registry startup disable and ExpandString rollback: passed
+- Request/response interface: passed
+- GUI launch: passed with no errors
+
 ## [0.3.0-alpha] - 2026-08-03
 
 ### Added

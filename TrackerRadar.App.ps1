@@ -7,7 +7,7 @@ param(
 Set-StrictMode -Version 2.0
 $ErrorActionPreference = 'Stop'
 
-$script:Version = '0.3.0-alpha'
+$script:Version = '0.4.0-alpha'
 $script:Root = Split-Path -Parent $MyInvocation.MyCommand.Path
 $script:Data = Join-Path $script:Root 'data'
 $script:State = Join-Path $script:Data 'state'
@@ -379,6 +379,10 @@ function Get-Findings {
                 Level = 'Verdaechtig'
                 Summary = "$($entry.Name): Autostart aus einem ungewoehnlichen Ordner."
                 Detail = $entry.Command
+                ActionType = 'DisableStartup'
+                StartupName = $entry.Name
+                StartupLocation = $entry.Location
+                StartupCommand = $entry.Command
             }
         } elseif ($BaselineExists -and $entry.Change -eq 'Neu') {
             $result += [pscustomobject]@{
@@ -387,6 +391,10 @@ function Get-Findings {
                 Level = 'Neu'
                 Summary = "$($entry.Name): neuer Autostart wurde entdeckt."
                 Detail = "$($entry.Location)`n$($entry.Command)"
+                ActionType = 'DisableStartup'
+                StartupName = $entry.Name
+                StartupLocation = $entry.Location
+                StartupCommand = $entry.Command
             }
         } elseif ($BaselineExists -and $entry.Change -eq 'Geaendert') {
             $result += [pscustomobject]@{
@@ -395,6 +403,10 @@ function Get-Findings {
                 Level = 'Geaendert'
                 Summary = "$($entry.Name): bestehender Autostart wurde veraendert."
                 Detail = "$($entry.Location)`n$($entry.Command)"
+                ActionType = 'DisableStartup'
+                StartupName = $entry.Name
+                StartupLocation = $entry.Location
+                StartupCommand = $entry.Command
             }
         }
     }
@@ -680,7 +692,7 @@ Add-Type -AssemblyName PresentationFramework, PresentationCore, WindowsBase
 [xml]$xaml = @'
 <Window xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="TrackerRadar 0.3 Alpha | SC LABS" Width="1180" Height="720" MinWidth="960" MinHeight="620"
+        Title="TrackerRadar 0.4 Alpha | SC LABS" Width="1180" Height="720" MinWidth="960" MinHeight="620"
         WindowStartupLocation="CenterScreen" Background="#071018" Foreground="#ECF3F7"
         FontFamily="Segoe UI" FontSize="14">
     <Window.Resources>
@@ -775,6 +787,7 @@ Add-Type -AssemblyName PresentationFramework, PresentationCore, WindowsBase
                     <Button x:Name="NavActivities" Style="{StaticResource NavButton}" Content="Aktivitaeten"/>
                     <Button x:Name="NavFindings" Style="{StaticResource NavButton}" Content="Befunde"/>
                     <Button x:Name="NavHistory" Style="{StaticResource NavButton}" Content="Verlauf"/>
+                    <Button x:Name="NavChanges" Style="{StaticResource NavButton}" Content="Aenderungen"/>
                 </StackPanel>
                 <Border Grid.Row="3" Background="#0E211D" BorderBrush="#1C523F" BorderThickness="1" CornerRadius="12" Padding="13">
                     <StackPanel><TextBlock Text="LOKAL UND PRIVAT" Foreground="{StaticResource Green}" FontWeight="SemiBold"/><TextBlock Text="Keine Cloud. Keine Telemetrie." Foreground="#8FA8A0" Margin="0,5,0,0" FontSize="12"/></StackPanel>
@@ -818,16 +831,18 @@ Add-Type -AssemblyName PresentationFramework, PresentationCore, WindowsBase
                 </Grid>
 
                 <Border x:Name="ActivitiesView" Visibility="Collapsed" Background="{StaticResource Panel}" BorderBrush="{StaticResource Line}" BorderThickness="1" CornerRadius="12" ClipToBounds="True">
-                    <Grid><Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/></Grid.RowDefinitions>
+                    <Grid><Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
                         <StackPanel Margin="17,14,17,11"><TextBlock Text="Alle aktiven Internetverbindungen" FontSize="18" FontWeight="SemiBold"/><TextBlock Text="Domain, Anbieter, IP-Adresse und erster Erkennungszeitpunkt" Foreground="#8399A6" FontSize="12" Margin="0,3,0,0"/></StackPanel>
                         <DataGrid x:Name="ActivityGrid" Grid.Row="1" AlternationCount="2"><DataGrid.Columns><DataGridTextColumn Header="APP" Binding="{Binding App}" Width="1.1*"/><DataGridTextColumn Header="ZIEL" Binding="{Binding Target}" Width="1.35*"/><DataGridTextColumn Header="ANBIETER" Binding="{Binding Provider}" Width="1.15*"/><DataGridTextColumn Header="IP" Binding="{Binding Address}" Width="1.05*"/><DataGridTextColumn Header="PORT" Binding="{Binding Port}" Width="60"/><DataGridTextColumn Header="STATUS" Binding="{Binding Change}" Width="100"/><DataGridTextColumn Header="ERSTMALS" Binding="{Binding FirstSeenDisplay}" Width="105"/></DataGrid.Columns></DataGrid>
+                        <Button x:Name="BlockInternetButton" Grid.Row="2" Content="Internetzugriff blockieren" HorizontalAlignment="Right" MinWidth="215" Margin="15"/>
                     </Grid>
                 </Border>
 
                 <Border x:Name="FindingsView" Visibility="Collapsed" Background="{StaticResource Panel}" BorderBrush="{StaticResource Line}" BorderThickness="1" CornerRadius="12" ClipToBounds="True">
-                    <Grid><Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/></Grid.RowDefinitions>
+                    <Grid><Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
                         <StackPanel Margin="17,14,17,11"><TextBlock Text="Befunde und Systemaenderungen" FontSize="18" FontWeight="SemiBold"/><TextBlock Text="Neue oder veraenderte Autostarts und auffaelliges Prozessverhalten" Foreground="#8399A6" FontSize="12" Margin="0,3,0,0"/></StackPanel>
                         <DataGrid x:Name="FindingsGrid" Grid.Row="1" AlternationCount="2"><DataGrid.Columns><DataGridTextColumn Header="STUFE" Binding="{Binding Level}" Width="95"/><DataGridTextColumn Header="APP" Binding="{Binding App}" Width="1.0*"/><DataGridTextColumn Header="BEGRUENDUNG" Binding="{Binding Summary}" Width="2.8*"/><DataGridTextColumn Header="PUNKTE" Binding="{Binding Score}" Width="70"/></DataGrid.Columns></DataGrid>
+                        <Button x:Name="DisableStartupButton" Grid.Row="2" Content="Ausgewaehlten Autostart deaktivieren" HorizontalAlignment="Right" MinWidth="270" Margin="15"/>
                     </Grid>
                 </Border>
 
@@ -837,9 +852,17 @@ Add-Type -AssemblyName PresentationFramework, PresentationCore, WindowsBase
                         <DataGrid x:Name="HistoryGrid" Grid.Row="1" AlternationCount="2"><DataGrid.Columns><DataGridTextColumn Header="ZEIT" Binding="{Binding Time}" Width="135"/><DataGridTextColumn Header="APPS" Binding="{Binding Apps}" Width="60"/><DataGridTextColumn Header="VERBINDUNGEN" Binding="{Binding Connections}" Width="105"/><DataGridTextColumn Header="NEU" Binding="{Binding New}" Width="55"/><DataGridTextColumn Header="BEFUNDE" Binding="{Binding Findings}" Width="70"/><DataGridTextColumn Header="ZUSAMMENFASSUNG" Binding="{Binding Summary}" Width="2.5*"/></DataGrid.Columns></DataGrid>
                     </Grid>
                 </Border>
+
+                <Border x:Name="ChangesView" Visibility="Collapsed" Background="{StaticResource Panel}" BorderBrush="{StaticResource Line}" BorderThickness="1" CornerRadius="12" ClipToBounds="True">
+                    <Grid><Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+                        <StackPanel Margin="17,14,17,11"><TextBlock Text="Change Vault" FontSize="18" FontWeight="SemiBold"/><TextBlock Text="Jede genehmigte Systemaenderung mit sicherer Ruecknahme" Foreground="#8399A6" FontSize="12" Margin="0,3,0,0"/></StackPanel>
+                        <DataGrid x:Name="ChangeGrid" Grid.Row="1" AlternationCount="2"><DataGrid.Columns><DataGridTextColumn Header="ZEIT" Binding="{Binding Time}" Width="135"/><DataGridTextColumn Header="AKTION" Binding="{Binding DisplayAction}" Width="1.25*"/><DataGridTextColumn Header="ZIEL" Binding="{Binding TargetName}" Width="1.55*"/><DataGridTextColumn Header="STATUS" Binding="{Binding StatusDisplay}" Width="115"/></DataGrid.Columns></DataGrid>
+                        <Button x:Name="UndoChangeButton" Grid.Row="2" Content="Ausgewaehlte Aenderung rueckgaengig" HorizontalAlignment="Right" MinWidth="280" Margin="15"/>
+                    </Grid>
+                </Border>
             </Grid>
 
-            <Grid Grid.Row="2" Margin="0,13,0,0"><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions><TextBlock x:Name="StatusText" Text="Bereit" Foreground="#8DA1AD"/><TextBlock Grid.Column="1" Text="TrackerRadar 0.3 Alpha · SC LABS" Foreground="#627985"/></Grid>
+            <Grid Grid.Row="2" Margin="0,13,0,0"><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions><TextBlock x:Name="StatusText" Text="Bereit" Foreground="#8DA1AD"/><TextBlock Grid.Column="1" Text="TrackerRadar 0.4 Alpha | SC LABS" Foreground="#627985"/></Grid>
         </Grid>
     </Grid>
 </Window>
@@ -858,6 +881,10 @@ $overviewFindingsList = $window.FindName('OverviewFindingsList')
 $activityGrid = $window.FindName('ActivityGrid')
 $findingsGrid = $window.FindName('FindingsGrid')
 $historyGrid = $window.FindName('HistoryGrid')
+$changeGrid = $window.FindName('ChangeGrid')
+$blockInternetButton = $window.FindName('BlockInternetButton')
+$disableStartupButton = $window.FindName('DisableStartupButton')
+$undoChangeButton = $window.FindName('UndoChangeButton')
 $appsCount = $window.FindName('AppsCount')
 $newCount = $window.FindName('NewCount')
 $findingsCount = $window.FindName('FindingsCount')
@@ -871,10 +898,12 @@ $navOverview = $window.FindName('NavOverview')
 $navActivities = $window.FindName('NavActivities')
 $navFindings = $window.FindName('NavFindings')
 $navHistory = $window.FindName('NavHistory')
+$navChanges = $window.FindName('NavChanges')
 $overviewView = $window.FindName('OverviewView')
 $activitiesView = $window.FindName('ActivitiesView')
 $findingsView = $window.FindName('FindingsView')
 $historyView = $window.FindName('HistoryView')
+$changesView = $window.FindName('ChangesView')
 
 function Set-UiImage {
     param([Parameter(Mandatory)]$Control, [Parameter(Mandatory)][string]$Path)
@@ -889,14 +918,75 @@ function Set-UiImage {
     return $bitmap
 }
 
+function Get-ChangeVaultRows {
+    $rows = @()
+    $folder = Join-Path $script:Data 'changes'
+    if (-not (Test-Path -LiteralPath $folder)) { return @() }
+    foreach ($file in Get-ChildItem -LiteralPath $folder -Filter '*.json' -File -ErrorAction SilentlyContinue) {
+        try {
+            $record = Read-JsonFile $file.FullName
+            if (-not $record) { continue }
+            $time = [string]$record.Timestamp
+            try { $time = ([datetime]$record.Timestamp).ToString('dd.MM.yyyy HH:mm') } catch { }
+            $status = switch ([string]$record.Status) {
+                'Applied' { 'Aktiv' }
+                'Undone' { 'Rueckgaengig' }
+                'Pending' { 'Ausstehend' }
+                'Failed' { 'Fehlgeschlagen' }
+                default { [string]$record.Status }
+            }
+            $requiresAdmin = $false
+            if ($record.PSObject.Properties.Name -contains 'RequiresAdmin') { $requiresAdmin = [bool]$record.RequiresAdmin }
+            $rows += [pscustomobject]@{
+                Id = [string]$record.Id
+                Timestamp = [string]$record.Timestamp
+                Time = $time
+                DisplayAction = [string]$record.DisplayAction
+                TargetName = [string]$record.TargetName
+                Target = [string]$record.Target
+                Status = [string]$record.Status
+                StatusDisplay = $status
+                RequiresAdmin = $requiresAdmin
+            }
+        } catch { }
+    }
+    return @($rows | Sort-Object Timestamp -Descending)
+}
+
+function Invoke-ControlRequest {
+    param($Request,[bool]$RequireAdmin)
+    $controlScript = Join-Path $script:Root 'TrackerRadar.Control.ps1'
+    if (-not (Test-Path -LiteralPath $controlScript)) { throw 'TrackerRadar.Control.ps1 fehlt.' }
+    $requestFolder = Join-Path $script:Data 'control-requests'
+    if (-not (Test-Path -LiteralPath $requestFolder)) { New-Item -ItemType Directory -Path $requestFolder -Force | Out-Null }
+    $requestId = 'req-' + (Get-Date -Format 'yyyyMMdd-HHmmss') + '-' + ([guid]::NewGuid().ToString('N').Substring(0,8))
+    $requestPath = Join-Path $requestFolder ($requestId + '.json')
+    $responsePath = [IO.Path]::ChangeExtension($requestPath,'.response.json')
+    Write-JsonFile -Path $requestPath -Value $Request -Depth 8
+    $arguments = @('-NoLogo','-NoProfile','-NonInteractive','-ExecutionPolicy','Bypass','-File',$controlScript,'-RequestFile',$requestPath)
+    try {
+        if ($RequireAdmin) {
+            $process = Start-Process powershell.exe -Verb RunAs -ArgumentList $arguments -Wait -PassThru
+        } else {
+            $process = Start-Process powershell.exe -ArgumentList $arguments -Wait -PassThru -WindowStyle Hidden
+        }
+        if (-not (Test-Path -LiteralPath $responsePath)) { throw "Control-Helper lieferte keine Antwort (Exit $($process.ExitCode))." }
+        $response = Read-JsonFile $responsePath
+        if (-not $response) { throw 'Control-Antwort konnte nicht gelesen werden.' }
+        return $response
+    } finally {
+        Remove-Item -LiteralPath $requestPath -Force -ErrorAction SilentlyContinue
+        Remove-Item -LiteralPath $responsePath -Force -ErrorAction SilentlyContinue
+    }
+}
 $scLabsBitmap = Set-UiImage -Control $scLabsLogo -Path (Join-Path $script:Root 'assets\branding\sclabs-mark.png')
 $trackerRadarBitmap = Set-UiImage -Control $trackerRadarLogo -Path (Join-Path $script:Root 'assets\branding\trackerradar-logo.png')
 if ($trackerRadarBitmap) { $window.Icon = $trackerRadarBitmap }
 
 function Set-View {
     param([string]$Name)
-    foreach ($view in @($overviewView,$activitiesView,$findingsView,$historyView)) { $view.Visibility = 'Collapsed' }
-    foreach ($button in @($navOverview,$navActivities,$navFindings,$navHistory)) {
+    foreach ($view in @($overviewView,$activitiesView,$findingsView,$historyView,$changesView)) { $view.Visibility = 'Collapsed' }
+    foreach ($button in @($navOverview,$navActivities,$navFindings,$navHistory,$navChanges)) {
         $button.Background = [System.Windows.Media.Brushes]::Transparent
         $button.Foreground = New-Object System.Windows.Media.SolidColorBrush ([System.Windows.Media.Color]::FromRgb(170,186,196))
         $button.FontWeight = 'Normal'
@@ -906,6 +996,7 @@ function Set-View {
         'Activities' { $activitiesView.Visibility='Visible'; $navActivities.Background='#102630'; $navActivities.Foreground='#25D7C0'; $navActivities.FontWeight='SemiBold'; $viewTitle.Text='Aktivitaeten'; $viewSubtitle.Text='Alle aktuellen Ziele mit Anbieter, IP und erstem Erkennungszeitpunkt.' }
         'Findings' { $findingsView.Visibility='Visible'; $navFindings.Background='#102630'; $navFindings.Foreground='#25D7C0'; $navFindings.FontWeight='SemiBold'; $viewTitle.Text='Befunde'; $viewSubtitle.Text='Nur neue, veraenderte oder technisch auffaellige Aktivitaeten.' }
         'History' { $historyView.Visibility='Visible'; $navHistory.Background='#102630'; $navHistory.Foreground='#25D7C0'; $navHistory.FontWeight='SemiBold'; $viewTitle.Text='Verlauf'; $viewSubtitle.Text='Lokal gespeicherte Aenderungen der letzten sieben Tage.' }
+        'Changes' { $changesView.Visibility='Visible'; $navChanges.Background='#102630'; $navChanges.Foreground='#25D7C0'; $navChanges.FontWeight='SemiBold'; $viewTitle.Text='Aenderungen'; $viewSubtitle.Text='Genehmigte Eingriffe mit vollstaendiger Ruecknahme.' }
         default { $overviewView.Visibility='Visible'; $navOverview.Background='#102630'; $navOverview.Foreground='#25D7C0'; $navOverview.FontWeight='SemiBold'; $viewTitle.Text='Uebersicht'; $viewSubtitle.Text='Neue Aktivitaeten und wichtige Aenderungen auf einen Blick.' }
     }
 }
@@ -924,6 +1015,7 @@ function Update-Ui {
         $activityGrid.ItemsSource = @($snapshot.Activities)
         $findingsGrid.ItemsSource = @($snapshot.Findings)
         $historyGrid.ItemsSource = @($snapshot.History)
+        $changeGrid.ItemsSource = @(Get-ChangeVaultRows)
         $appsCount.Text = [string]$snapshot.ActiveApps
         $newCount.Text = [string]$snapshot.NewCount
         $findingsCount.Text = [string]$snapshot.FindingCount
@@ -950,9 +1042,62 @@ $navOverview.Add_Click({ Set-View 'Overview' })
 $navActivities.Add_Click({ Set-View 'Activities' })
 $navFindings.Add_Click({ Set-View 'Findings' })
 $navHistory.Add_Click({ Set-View 'History' })
+$navChanges.Add_Click({ Set-View 'Changes' })
 $scanButton.Add_Click({ Update-Ui })
 $reportButton.Add_Click({ $report = Join-Path $script:Data 'latest-scan.json'; if (Test-Path -LiteralPath $report) { Start-Process explorer.exe -ArgumentList @('/select,', $report) } })
 
+$blockInternetButton.Add_Click({
+    $item = $activityGrid.SelectedItem
+    if (-not $item) { [System.Windows.MessageBox]::Show('Bitte zuerst eine Anwendung auswaehlen.', 'TrackerRadar', 'OK', 'Information') | Out-Null; return }
+    if ([string]::IsNullOrWhiteSpace([string]$item.Path) -or -not (Test-Path -LiteralPath ([string]$item.Path) -PathType Leaf)) { [System.Windows.MessageBox]::Show('Der Programmpfad konnte nicht bestaetigt werden. Die App wird nicht blockiert.', 'TrackerRadar', 'OK', 'Warning') | Out-Null; return }
+    $message = "Internetzugriff fuer $($item.App) blockieren?`n`nPfad: $($item.Path)`n`nTrackerRadar erstellt eine ausgehende Windows-Firewall-Regel. Windows fragt einmal nach Administratorrechten. Die Aenderung wird im Change Vault gespeichert und kann rueckgaengig gemacht werden."
+    if ([System.Windows.MessageBox]::Show($message, 'Internetzugriff blockieren', 'YesNo', 'Warning') -ne 'Yes') { return }
+    try {
+        $response = Invoke-ControlRequest -Request ([pscustomobject]@{ Action='BlockInternet'; ProgramPath=[string]$item.Path }) -RequireAdmin $true
+        if (-not [bool]$response.Ok) { throw [string]$response.Error }
+        [System.Windows.MessageBox]::Show([string]$response.Message, 'TrackerRadar', 'OK', 'Information') | Out-Null
+        Update-Ui
+        Set-View 'Changes'
+    } catch { [System.Windows.MessageBox]::Show($_.Exception.Message, 'Aenderung nicht ausgefuehrt', 'OK', 'Error') | Out-Null }
+})
+
+$disableStartupButton.Add_Click({
+    $item = $findingsGrid.SelectedItem
+    if (-not $item) { [System.Windows.MessageBox]::Show('Bitte zuerst einen Autostart-Befund auswaehlen.', 'TrackerRadar', 'OK', 'Information') | Out-Null; return }
+    if (-not ($item.PSObject.Properties.Name -contains 'ActionType') -or [string]$item.ActionType -ne 'DisableStartup') { [System.Windows.MessageBox]::Show('Dieser Befund ist kein deaktivierbarer Autostart.', 'TrackerRadar', 'OK', 'Information') | Out-Null; return }
+    $location = [string]$item.StartupLocation
+    $requiresAdmin = $location.StartsWith('HKLM:',[StringComparison]::OrdinalIgnoreCase) -or $location.StartsWith($env:ProgramData,[StringComparison]::OrdinalIgnoreCase)
+    $message = "Autostart $($item.StartupName) deaktivieren?`n`nSpeicherort: $location`nBefehl: $($item.StartupCommand)`n`nDer Originalwert wird im Change Vault gesichert und kann vollstaendig wiederhergestellt werden."
+    if ([System.Windows.MessageBox]::Show($message, 'Autostart deaktivieren', 'YesNo', 'Warning') -ne 'Yes') { return }
+    try {
+        $request = [pscustomobject]@{ Action='DisableStartup'; Name=[string]$item.StartupName; Location=$location; Command=[string]$item.StartupCommand }
+        $response = Invoke-ControlRequest -Request $request -RequireAdmin $requiresAdmin
+        if (-not [bool]$response.Ok) { throw [string]$response.Error }
+        [System.Windows.MessageBox]::Show([string]$response.Message, 'TrackerRadar', 'OK', 'Information') | Out-Null
+        Update-Ui
+        Set-View 'Changes'
+    } catch { [System.Windows.MessageBox]::Show($_.Exception.Message, 'Aenderung nicht ausgefuehrt', 'OK', 'Error') | Out-Null }
+})
+
+$undoChangeButton.Add_Click({
+    $item = $changeGrid.SelectedItem
+    if (-not $item) { [System.Windows.MessageBox]::Show('Bitte zuerst eine Aenderung auswaehlen.', 'TrackerRadar', 'OK', 'Information') | Out-Null; return }
+    if ([string]$item.Status -eq 'Undone') { [System.Windows.MessageBox]::Show('Diese Aenderung wurde bereits rueckgaengig gemacht.', 'TrackerRadar', 'OK', 'Information') | Out-Null; return }
+    $message = "$($item.DisplayAction) fuer $($item.TargetName) rueckgaengig machen?"
+    if ([System.Windows.MessageBox]::Show($message, 'Aenderung rueckgaengig machen', 'YesNo', 'Question') -ne 'Yes') { return }
+    try {
+        $response = Invoke-ControlRequest -Request ([pscustomobject]@{ Action='UndoChange'; ChangeId=[string]$item.Id }) -RequireAdmin ([bool]$item.RequiresAdmin)
+        if (-not [bool]$response.Ok) { throw [string]$response.Error }
+        [System.Windows.MessageBox]::Show([string]$response.Message, 'TrackerRadar', 'OK', 'Information') | Out-Null
+        Update-Ui
+        Set-View 'Changes'
+    } catch { [System.Windows.MessageBox]::Show($_.Exception.Message, 'Ruecknahme fehlgeschlagen', 'OK', 'Error') | Out-Null }
+})
+
+$changeGrid.Add_MouseDoubleClick({
+    $item = $changeGrid.SelectedItem
+    if ($item) { [System.Windows.MessageBox]::Show("ID: $($item.Id)`nAktion: $($item.DisplayAction)`nZiel: $($item.Target)`nStatus: $($item.StatusDisplay)", 'Change Vault', 'OK', 'Information') | Out-Null }
+})
 $showActivity = {
     param($grid)
     $item = $grid.SelectedItem
@@ -970,9 +1115,9 @@ $historyGrid.Add_MouseDoubleClick({ $item=$historyGrid.SelectedItem; if ($item) 
 if ($UiSmokeTest) {
     try {
         $results = @()
-        foreach ($name in @('Overview','Activities','Findings','History')) {
+        foreach ($name in @('Overview','Activities','Findings','History','Changes')) {
             Set-View $name
-            $visibleCount = @($overviewView,$activitiesView,$findingsView,$historyView | Where-Object { $_.Visibility -eq 'Visible' }).Count
+            $visibleCount = @($overviewView,$activitiesView,$findingsView,$historyView,$changesView | Where-Object { $_.Visibility -eq 'Visible' }).Count
             $results += [pscustomobject]@{ View=$name; Passed=($visibleCount -eq 1); VisibleCount=$visibleCount }
         }
         $passed = @($results | Where-Object { $_.Passed }).Count

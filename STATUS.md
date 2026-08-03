@@ -1,71 +1,85 @@
-# TrackerRadar Alpha – Status
+# TrackerRadar Alpha - Status
 
-Stand: 2026-08-03, 11:41 Uhr Europe/Berlin
+Stand: 2026-08-03, 14:03 Uhr Europe/Berlin
 
 ## Ergebnis
 
-TrackerRadar `0.3.0-alpha` ist als portable, lokale und weiterhin vollständig read-only arbeitende Windows-App lauffähig.
+TrackerRadar `0.4.0-alpha` ist als portable, lokale Windows-App mit bewusst begrenzten und reversiblen Safe-Control-Funktionen lauffaehig.
 
 - Startdatei: `Start-TrackerRadar.cmd`
 - Installation: nicht erforderlich
-- Betriebsart: lokal, read-only
+- Monitoring: lokal ohne dauerhafte Administratorrechte
+- Aenderungen: nur nach Bestaetigung; geschuetzte Aktionen mit sichtbarem Windows-UAC-Dialog
 - Cloud/Telemetrie: keine
-- Zusätzliche Runtime: keine Installation notwendig
+- Zusaetzliche Runtime: keine Installation notwendig
 
-## Neu in 0.3
+## Neu in 0.4
 
-- Lokale Baseline für bekannte Verbindungen und Autostarts
-- Erkennung neuer Verbindungen ohne wiederholte Falschmeldung bei jedem Scan
-- Unterscheidung zwischen `Neu`, `Wieder aktiv`, `Aktiv` und `Baseline`
-- Domainauflösung über den lokalen Windows-DNS-Cache
-- Verständliche Anbieter- und Zweckhinweise für bekannte Dienste
-- Erkennung neuer, geänderter und entfernter üblicher Autostarts
-- Begrenzter lokaler Sieben-Tage-Verlauf als JSONL
-- Verlaufsspeicherung nur bei Änderungen oder spätestens alle 15 Minuten
-- Funktionierende Ansichten: Übersicht, Aktivitäten, Befunde und Verlauf
-- Detaillierte Aktivitätsansicht mit Domain, Anbieter, Zweck, IP, Port, Pfad und erster Erkennung
+- Internetzugriff einer ausgewaehlten Anwendung ueber eine ausgehende Windows-Firewall-Regel blockieren
+- Ausgewaehlte neue, geaenderte oder auffaellige Autostarts deaktivieren
+- Lokaler Change Vault mit Zeit, Aktion, Ziel und Status
+- Ruecknahme unterstuetzter Firewall-, Registry- und Startup-Ordner-Aenderungen
+- Separater lokaler Control-Helper ohne offenen Port und ohne dauerhafte Elevation
+- Fuenfte Ansicht `Aenderungen`
+- Change-Datensatz wird vor dem Eingriff als `Pending` geschrieben
+- Registry-Werttyp wird fuer exakte Ruecknahme gespeichert
+
+## Sicherheitsgrenzen
+
+- Keine automatische Blockierung oder Bereinigung
+- Keine Loeschung unbekannter Dateien
+- Keine Entfernung von Windows-Komponenten
+- Keine dauerhafte Admin-App und kein neuer Windows-Dienst
+- Firewall-Aktion betrifft nur ausgehenden Verkehr der ausgewaehlten EXE
+- Autostart wird deaktiviert, nicht vernichtet; Originalwert oder Originaldatei bleibt im Change Vault wiederherstellbar
 
 ## Verifizierte Funktionen
 
-- Aktive externe TCP-Verbindungen werden Prozess und Programmpfad zugeordnet
-- Lokale Baseline wird angelegt und fortgeführt
-- Dieselbe bekannte Verbindung wird nicht erneut als neu gemeldet
-- Neue Verbindung wurde im Test korrekt erkannt
-- DNS-Ziel `api.anthropic.com` wurde korrekt als Anthropic/KI-Cloud-Dienst erklärt
-- Autostarts werden aus Registry und Startup-Ordnern gelesen
-- JSON-Bericht und begrenzter Verlauf werden lokal erzeugt
-- Navigation schaltet jeweils exakt eine Ansicht sichtbar
-- Automatische Aktualisierung alle 30 Sekunden
+- Monitoring-Kern: **8/8 PASS**
+- Control-Helper: **8/8 PASS**
+- UI-Navigation: **5/5 PASS**
+- GUI-Start: **PASS**
+- GUI-Fehlerausgabe: leer
+- File-Startup deaktivieren und rueckgaengig machen: **PASS**
+- Registry-Startup deaktivieren und rueckgaengig machen: **PASS**
+- Registry-`ExpandString`-Typ unveraendert wiederhergestellt: **PASS**
+- Lokale Request/Response-Schnittstelle: **PASS**
+- Testdaten nach Pruefung bereinigt; Change Vault startet leer
 
 ## Letzter Regressionstest
 
-- Kern-Selbsttest: **8/8 PASS**
-- UI-Navigation: **4/4 PASS**
-- GUI-Start: **PASS**
-- GUI-Fehlerausgabe: leer
-- Working Set nach 10 Sekunden: **183,4 MB**
-- Privater Speicher nach 10 Sekunden: **167,3 MB**
-- CPU-Zeit nach 10 Sekunden: **2,16 Sekunden**
-- Live-Scan: zuletzt rund **0,6 Sekunden**
+- Working Set nach 10 Sekunden: **185,7 MB**
+- Privater Speicher nach 10 Sekunden: **168,6 MB**
+- CPU-Zeit nach 10 Sekunden: **2,33 Sekunden**
+- GUI-Fehler: **keine**
 
 ## Portable-Paket
 
-- Datei: `dist/TrackerRadar-0.3.0-alpha-portable.zip`
-- Größe: 203.637 Bytes
-- SHA-256: `262F255695F7591CD3CC3040911146D8E6A52AAB0819D70728F032049FD76BDB`
+- Datei: `dist/TrackerRadar-0.4.0-alpha-portable.zip`
+- Groesse: **211.176 Bytes**
+- SHA-256: `9D6C5C8A0536B2A707462552C4338FC597663BBC5BCFCEF7839F7A7ED7AFE117`
+- Build-Gates: Monitoring **8/8**, Control **8/8**, Navigation **5/5**
+
+## Noch manuell zu pruefen
+
+Die echte Firewall-Regel wird in automatisierten Tests bewusst nicht auf dem Produktivsystem angelegt. Vor einer oeffentlichen Alpha ist ein manueller UAC-Test erforderlich:
+
+1. harmlose Testanwendung auswaehlen,
+2. ausgehende Regel anlegen,
+3. Regel und Wirkung pruefen,
+4. ueber Change Vault zuruecknehmen,
+5. vollstaendige Entfernung der Regel bestaetigen.
 
 ## Bewertung
 
-Version 0.3 liefert deutlich mehr Endnutzen als die reine Momentaufnahme aus 0.2.2. Der private Speicher stieg durch vier echte Ansichten, Baseline und Verlauf um etwa 7–8 MB. Eine weitere Demontage der Oberfläche für wenige Megabyte wäre aktuell unverhältnismäßig. Die App bleibt ohne Electron, Datenbank, Hintergrunddienst oder Cloud bewusst schlank.
+Version 0.4 liefert die ersten echten Schutzaktionen, ohne TrackerRadar in eine schwere Security-Suite zu verwandeln. Gegenueber 0.3 steigt der private Speicher nur geringfuegig. Die Anwendung bleibt ohne Electron, Datenbank, Cloud, Hintergrunddienst oder eigenen Treiber.
 
-## Noch nicht enthalten
+## Weiterhin nicht enthalten
 
-- Vollständige Datei-Leseüberwachung mit Prozesszuordnung
-- Aktive Firewall-Blockierung
-- Deaktivieren oder Entfernen von Autostarts
-- Change Vault und Rollback
-- Windows-Hardening
+- Vollstaendige Datei-Leseueberwachung mit Prozesszuordnung
+- Kontrolle beliebiger vorhandener Autostarts ausserhalb eines Befunds
+- Automatische Tracker-Blocklisten
+- Windows-Hardening-Profile
 - Signierter Installer
 - Hintergrunddienst oder eigener Treiber
-
-Diese Funktionen bleiben für spätere, getrennte Sprints vorgesehen.
+- Schutzversprechen gegen jede Malware oder Backdoor
