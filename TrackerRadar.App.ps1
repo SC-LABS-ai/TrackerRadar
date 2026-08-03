@@ -7,7 +7,7 @@ param(
 Set-StrictMode -Version 2.0
 $ErrorActionPreference = 'Stop'
 
-$script:Version = '0.4.0-alpha'
+$script:Version = '0.4.1-alpha'
 $script:Root = Split-Path -Parent $MyInvocation.MyCommand.Path
 $script:Data = Join-Path $script:Root 'data'
 $script:State = Join-Path $script:Data 'state'
@@ -692,7 +692,7 @@ Add-Type -AssemblyName PresentationFramework, PresentationCore, WindowsBase
 [xml]$xaml = @'
 <Window xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="TrackerRadar 0.4 Alpha | SC LABS" Width="1180" Height="720" MinWidth="960" MinHeight="620"
+        Title="TrackerRadar 0.4.1 Alpha | SC LABS" Width="1180" Height="720" MinWidth="960" MinHeight="620"
         WindowStartupLocation="CenterScreen" Background="#071018" Foreground="#ECF3F7"
         FontFamily="Segoe UI" FontSize="14">
     <Window.Resources>
@@ -862,7 +862,7 @@ Add-Type -AssemblyName PresentationFramework, PresentationCore, WindowsBase
                 </Border>
             </Grid>
 
-            <Grid Grid.Row="2" Margin="0,13,0,0"><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions><TextBlock x:Name="StatusText" Text="Bereit" Foreground="#8DA1AD"/><TextBlock Grid.Column="1" Text="TrackerRadar 0.4 Alpha | SC LABS" Foreground="#627985"/></Grid>
+            <Grid Grid.Row="2" Margin="0,13,0,0"><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions><TextBlock x:Name="StatusText" Text="Bereit" Foreground="#8DA1AD"/><TextBlock Grid.Column="1" Text="TrackerRadar 0.4.1 Alpha | SC LABS" Foreground="#627985"/></Grid>
         </Grid>
     </Grid>
 </Window>
@@ -962,21 +962,48 @@ function Invoke-ControlRequest {
     $requestId = 'req-' + (Get-Date -Format 'yyyyMMdd-HHmmss') + '-' + ([guid]::NewGuid().ToString('N').Substring(0,8))
     $requestPath = Join-Path $requestFolder ($requestId + '.json')
     $responsePath = [IO.Path]::ChangeExtension($requestPath,'.response.json')
+    $pointerPath = ''
     Write-JsonFile -Path $requestPath -Value $Request -Depth 8
     $arguments = @('-NoLogo','-NoProfile','-NonInteractive','-ExecutionPolicy','Bypass','-File',$controlScript,'-RequestFile',$requestPath)
     try {
         if ($RequireAdmin) {
-            $process = Start-Process powershell.exe -Verb RunAs -ArgumentList $arguments -Wait -PassThru
+            $elevatedScript = Join-Path $script:Root 'TrackerRadar.Elevated.ps1'
+            if (-not (Test-Path -LiteralPath $elevatedScript -PathType Leaf)) { throw 'TrackerRadar.Elevated.ps1 fehlt.' }
+            $pointerPath = Join-Path $requestFolder 'elevated-request.txt'
+            [IO.File]::WriteAllText($pointerPath,$requestPath,(New-Object Text.UTF8Encoding($false)))
+            $elevatedArguments = @('-NoLogo','-NoProfile','-NonInteractive','-ExecutionPolicy','Bypass','-File',$elevatedScript)
+            $argumentString = ($elevatedArguments | ForEach-Object {
+                $value = [string]$_
+                if ($value -match '[\s"]') { '"' + $value.Replace('"','\"') + '"' } else { $value }
+            }) -join ' '
+            try {
+                $process = Start-Process powershell.exe -Verb RunAs -ArgumentList $argumentString -Wait -PassThru
+            } catch {
+                $nativeCode = 0
+                try { $nativeCode = [int]$_.Exception.NativeErrorCode } catch { }
+                if ($nativeCode -eq 1223 -or $_.Exception.Message -match 'canceled|cancelled|abgebrochen') {
+                    throw 'Windows-Abfrage wurde abgebrochen. Es wurde nichts geaendert.'
+                }
+                throw
+            }
         } else {
             $process = Start-Process powershell.exe -ArgumentList $arguments -Wait -PassThru -WindowStyle Hidden
         }
-        if (-not (Test-Path -LiteralPath $responsePath)) { throw "Control-Helper lieferte keine Antwort (Exit $($process.ExitCode))." }
+        if (-not (Test-Path -LiteralPath $responsePath)) {
+            if ($RequireAdmin -and $process.ExitCode -eq -196608) {
+                throw 'Windows-Abfrage wurde abgebrochen oder nicht bestaetigt. Es wurde nichts geaendert.'
+            }
+            throw "Control-Helper lieferte keine Antwort (Exit $($process.ExitCode))."
+        }
         $response = Read-JsonFile $responsePath
         if (-not $response) { throw 'Control-Antwort konnte nicht gelesen werden.' }
         return $response
     } finally {
         Remove-Item -LiteralPath $requestPath -Force -ErrorAction SilentlyContinue
         Remove-Item -LiteralPath $responsePath -Force -ErrorAction SilentlyContinue
+        if (-not [string]::IsNullOrWhiteSpace($pointerPath)) {
+            Remove-Item -LiteralPath $pointerPath -Force -ErrorAction SilentlyContinue
+        }
     }
 }
 $scLabsBitmap = Set-UiImage -Control $scLabsLogo -Path (Join-Path $script:Root 'assets\branding\sclabs-mark.png')

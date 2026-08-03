@@ -10,7 +10,7 @@ TrackerRadar shows which applications maintain external TCP connections, where t
 
 ## Status
 
-**Version:** `0.4.0-alpha`
+**Version:** `0.4.1-alpha`
 
 **State:** local safe-control prototype, not a public security release
 
@@ -52,7 +52,9 @@ PowerShell execution is limited to the scripts contained in this project. Tracke
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Test-TrackerRadar-App.ps1
 ```
 
-The test checks the eight-part monitoring core, the eight-part control helper, all five navigation views, WPF launch, GUI errors and memory usage. Machine-specific results are stored in the ignored `data/` directory.
+The test checks the eight-part monitoring core, the nine-part control helper, the three-part elevated-wrapper self-test, all five navigation views, WPF launch, GUI errors and memory usage. Machine-specific results are stored in the ignored `data/` directory.
+
+The isolated firewall block/undo proof is prepared in `Test-Firewall-BlockUndo.ps1`. It copies Windows `curl.exe` into the ignored test folder and only continues after visible UAC confirmation. On this workstation the UAC confirmation was not completed, so the real firewall effect remains an open release gate; no test rule or Change Vault entry was left behind.
 
 ## Portable package
 

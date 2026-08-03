@@ -78,21 +78,34 @@ function Invoke-Netsh {
     return ($output -join [Environment]::NewLine)
 }
 
+function Get-FirewallRuleSnapshot {
+    param([string]$RuleName)
+    $output = & netsh.exe advfirewall firewall show rule name="$RuleName" verbose 2>&1
+    $code = $LASTEXITCODE
+    $text = ($output -join [Environment]::NewLine)
+    $notFound = $text -match 'No rules match|Keine Regeln|Es wurden keine Regeln'
+    return [pscustomobject]@{
+        Exists = ($code -eq 0 -and -not $notFound)
+        ExitCode = $code
+        Text = $text
+    }
+}
+
 function Apply-BlockInternet {
     param($Request)
     $programPath = [string]$Request.ProgramPath
     if ([string]::IsNullOrWhiteSpace($programPath) -or -not (Test-Path -LiteralPath $programPath -PathType Leaf)) {
         throw 'Der Programmpfad ist nicht vorhanden oder ungueltig.'
     }
-    if (-not (Test-IsAdministrator)) { throw 'Administratorrechte sind fuer die Firewall-Regel erforderlich.' }
 
     $id = if ($Request.ChangeId) { [string]$Request.ChangeId } else { New-ChangeId }
     $hash = Get-ShortHash $programPath.ToLowerInvariant()
     $ruleName = "SC LABS TrackerRadar Block $hash"
-    $existing = & netsh.exe advfirewall firewall show rule name="$ruleName" 2>$null
-    if ($LASTEXITCODE -eq 0 -and ($existing -join ' ') -notmatch 'No rules match|Keine Regeln') {
+    $existing = Get-FirewallRuleSnapshot $ruleName
+    if ($existing.Exists) {
         throw "Eine TrackerRadar-Regel fuer dieses Programm existiert bereits: $ruleName"
     }
+    if (-not (Test-IsAdministrator)) { throw 'Administratorrechte sind fuer die Firewall-Regel erforderlich.' }
 
     $record = [pscustomobject]@{
         Id = $id
@@ -104,16 +117,25 @@ function Apply-BlockInternet {
         Status = 'Pending'
         RequiresAdmin = $true
         Undo = [pscustomobject]@{ Type='FirewallRule'; RuleName=$ruleName }
-        Evidence = [pscustomobject]@{ RuleName=$ruleName; Netsh='' }
+        Evidence = [pscustomobject]@{ RuleName=$ruleName; Netsh=''; Verified=$false }
     }
     $recordPath = Save-ChangeRecord $record
     try {
         $netshOutput = Invoke-Netsh @('advfirewall','firewall','add','rule',"name=$ruleName",'dir=out','action=block',"program=$programPath",'enable=yes','profile=any')
+        $verified = Get-FirewallRuleSnapshot $ruleName
+        if (-not $verified.Exists -or $verified.Text.IndexOf($programPath,[StringComparison]::OrdinalIgnoreCase) -lt 0) {
+            throw 'Die Windows-Firewall-Regel konnte nach dem Anlegen nicht eindeutig bestaetigt werden.'
+        }
         $record.Status = 'Applied'
         $record.Evidence.Netsh = $netshOutput
+        $record.Evidence.Verified = $true
         Save-ChangeRecord $record | Out-Null
-        return [pscustomobject]@{ Ok=$true; ChangeId=$id; RecordPath=$recordPath; Message="Internetzugriff fuer $($record.TargetName) blockiert." }
+        return [pscustomobject]@{ Ok=$true; ChangeId=$id; RecordPath=$recordPath; Message="Internetzugriff fuer $($record.TargetName) blockiert und verifiziert." }
     } catch {
+        try {
+            $remaining = Get-FirewallRuleSnapshot $ruleName
+            if ($remaining.Exists) { Invoke-Netsh @('advfirewall','firewall','delete','rule',"name=$ruleName") | Out-Null }
+        } catch { }
         $record.Status = 'Failed'
         $record | Add-Member -NotePropertyName Error -NotePropertyValue $_.Exception.Message -Force
         Save-ChangeRecord $record | Out-Null
@@ -201,7 +223,13 @@ function Undo-Change {
     switch ($undoType) {
         'FirewallRule' {
             if (-not (Test-IsAdministrator)) { throw 'Administratorrechte sind zum Entfernen der Firewall-Regel erforderlich.' }
-            Invoke-Netsh @('advfirewall','firewall','delete','rule',"name=$([string]$record.Undo.RuleName)") | Out-Null
+            $ruleName = [string]$record.Undo.RuleName
+            $before = Get-FirewallRuleSnapshot $ruleName
+            if ($before.Exists) {
+                Invoke-Netsh @('advfirewall','firewall','delete','rule',"name=$ruleName") | Out-Null
+            }
+            $after = Get-FirewallRuleSnapshot $ruleName
+            if ($after.Exists) { throw 'Die Firewall-Regel ist nach der Ruecknahme weiterhin vorhanden.' }
         }
         'RegistryValue' {
             $location = [string]$record.Undo.Location
@@ -262,6 +290,8 @@ function Invoke-SelfTest {
     $checks += [pscustomobject]@{ Name='AdminDetection'; Passed=$true; Detail=[string](Test-IsAdministrator) }
     $ruleName = 'SC LABS TrackerRadar Block ' + (Get-ShortHash 'C:\Test\app.exe')
     $checks += [pscustomobject]@{ Name='RuleName'; Passed=($ruleName.Length -lt 100); Detail=$ruleName }
+    $missingRule = Get-FirewallRuleSnapshot ('SC LABS TrackerRadar SelfTest ' + [guid]::NewGuid().ToString('N'))
+    $checks += [pscustomobject]@{ Name='FirewallLookup'; Passed=(-not $missingRule.Exists); Detail='Nicht vorhandene Regel korrekt erkannt' }
 
     $testRoot = Join-Path $script:ControlTemp ('selftest-' + [guid]::NewGuid().ToString('N'))
     New-Item -ItemType Directory -Path $testRoot -Force | Out-Null
@@ -304,7 +334,7 @@ function Invoke-SelfTest {
         Remove-Item -LiteralPath $registryTestPath -Recurse -Force -ErrorAction SilentlyContinue
     }
 
-    $result = [pscustomobject]@{ Product='TrackerRadar Control'; Version='0.4.0-alpha'; Passed=@($checks | Where-Object {$_.Passed}).Count; Failed=@($checks | Where-Object {-not $_.Passed}).Count; Checks=$checks }
+    $result = [pscustomobject]@{ Product='TrackerRadar Control'; Version='0.4.1-alpha'; Passed=@($checks | Where-Object {$_.Passed}).Count; Failed=@($checks | Where-Object {-not $_.Passed}).Count; Checks=$checks }
     $result | ConvertTo-Json -Depth 6
     if ($result.Failed -gt 0) { exit 1 }
     exit 0

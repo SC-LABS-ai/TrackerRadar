@@ -9,7 +9,7 @@ TrackerRadar is prepared for version control but is not ready for a public relea
 - [ ] Verify ownership and redistribution rights for every asset
 - [ ] Complete sensitive-file access monitoring or clearly limit the claim
 - [x] Add isolated file and Registry disable/undo tests
-- [ ] Complete a manual UAC firewall block-and-rollback test on a harmless application
+- [ ] Complete the prepared UAC firewall block-and-rollback test with the isolated copied `curl.exe` target
 - [ ] Run a clean-checkout test on a second Windows machine
 - [x] Confirm no usernames, local paths, scan results, tokens or secrets are tracked in the final commit candidate
 - [ ] Produce current screenshots from the release build
@@ -21,4 +21,4 @@ TrackerRadar is prepared for version control but is not ready for a public relea
 
 ## Current release status
 
-`0.4.0-alpha` is a local safe-control prototype. It may be demonstrated as a reversible proof of concept, but it must not yet be marketed as complete protection against trackers, malware or backdoors. Public release remains blocked by the license decision, second-machine clean test and manual UAC firewall rollback test.
+`0.4.1-alpha` is a local safe-control prototype. It may be demonstrated as a reversible proof of concept, but it must not yet be marketed as complete protection against trackers, malware or backdoors. Public release remains blocked by the license decision, second-machine clean test and manual UAC firewall rollback test.

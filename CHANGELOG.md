@@ -8,6 +8,24 @@ All notable changes to TrackerRadar are documented here.
 - Safe per-application blocking and rollback
 - Compiled Windows build and signed installer
 
+## [0.4.1-alpha] - 2026-08-03
+
+### Changed
+- Prevent duplicate TrackerRadar firewall rules before requesting a new rule
+- Verify the exact program rule after creation and verify its absence after undo
+- Add a constrained local elevated wrapper for confirmed protected actions
+- Explain cancelled or unconfirmed Windows UAC prompts without claiming a change
+- Add an isolated copied-`curl.exe` block/undo release test
+
+### Verified
+- Monitoring core: 8/8 passed
+- Control helper: 9/9 passed
+- Elevated-wrapper self-test: 3/3 passed
+- UI navigation: 5/5 passed
+- GUI launch and resource test: passed
+- No residual firewall rule or Change Vault record after cancelled test attempts
+- Real firewall effect remains pending because the interactive UAC confirmation was not completed
+
 ## [0.4.0-alpha] - 2026-08-03
 
 ### Added
