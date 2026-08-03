@@ -4,7 +4,7 @@ Stand: 2026-08-03, 10:51 Uhr Europe/Berlin
 
 ## Ergebnis
 
-TrackerRadar 0.2.1-alpha ist als portable Windows-App lauffähig und mit den aktuellen SC-LABS- und TrackerRadar-Markenassets ausgestattet.
+TrackerRadar 0.2.2-alpha ist als portable Windows-App lauffähig und wurde mit einem vollständigen UI-Konsistenzpass für Logos, Karten, Navigation und Buttons überarbeitet.
 
 - Startdatei: `Start-TrackerRadar.cmd`
 - Installation: nicht erforderlich

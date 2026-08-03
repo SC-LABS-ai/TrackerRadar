@@ -221,7 +221,7 @@ function Get-Snapshot {
 
     $snapshot = [pscustomobject]@{
         Product = 'TrackerRadar Alpha'
-        Version = '0.2.1-alpha'
+        Version = '0.2.2-alpha'
         Timestamp = (Get-Date).ToString('o')
         DurationMs = [int]((Get-Date) - $started).TotalMilliseconds
         ExternalConnections = $connections.Count
@@ -284,7 +284,7 @@ Add-Type -AssemblyName PresentationFramework, PresentationCore, WindowsBase
 [xml]$xaml = @'
 <Window xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="TrackerRadar 0.2.1 Alpha | SC LABS" Width="1180" Height="720" MinWidth="960" MinHeight="620"
+        Title="TrackerRadar 0.2.2 Alpha | SC LABS" Width="1180" Height="720" MinWidth="960" MinHeight="620"
         WindowStartupLocation="CenterScreen" Background="#071018" Foreground="#ECF3F7"
         FontFamily="Segoe UI" FontSize="14">
     <Window.Resources>
@@ -297,10 +297,36 @@ Add-Type -AssemblyName PresentationFramework, PresentationCore, WindowsBase
         <SolidColorBrush x:Key="Red" Color="#FF5D68"/>
         <Style TargetType="Button">
             <Setter Property="Foreground" Value="#ECF3F7"/>
-            <Setter Property="Background" Value="#12302F"/>
+            <Setter Property="Background" Value="#103A38"/>
             <Setter Property="BorderBrush" Value="#25D7C0"/>
-            <Setter Property="Padding" Value="15,9"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="18,11"/>
             <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="ButtonChrome"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="11"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="ButtonChrome" Property="Background" Value="#174A47"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="ButtonChrome" Property="Background" Value="#0D2E2C"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="ButtonChrome" Property="Opacity" Value="0.55"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
         </Style>
         <Style TargetType="DataGrid">
             <Setter Property="Background" Value="#0D1922"/>
@@ -351,20 +377,20 @@ Add-Type -AssemblyName PresentationFramework, PresentationCore, WindowsBase
                             <TextBlock Text="PRODUCT SERIES" FontSize="9" Foreground="#718B99"/>
                         </StackPanel>
                     </StackPanel>
-                    <Border Margin="0,24,0,0" Height="132" CornerRadius="12" Background="#06101A" BorderBrush="#234455" BorderThickness="1" Padding="7">
-                        <Image x:Name="TrackerRadarLogo" Stretch="Uniform"/>
+                    <Border Margin="0,22,0,0" Height="132" CornerRadius="12" Background="#06101A" BorderBrush="#234455" BorderThickness="1" Padding="0" ClipToBounds="True">
+                        <Image x:Name="TrackerRadarLogo" Stretch="Uniform" Margin="0"/>
                     </Border>
                     <TextBlock Text="Sieh, was Programme wirklich tun." Margin="0,10,0,0" Foreground="#8EA2AF" TextWrapping="Wrap"/>
                 </StackPanel>
                 <StackPanel Grid.Row="1" Margin="0,34,0,0">
-                    <Border Background="#102630" CornerRadius="8" Padding="12">
+                    <Border Background="#102630" CornerRadius="10" Padding="12">
                         <TextBlock Text="Uebersicht" FontWeight="SemiBold" Foreground="{StaticResource Accent}"/>
                     </Border>
                     <TextBlock Text="Aktivitaeten" Margin="12,20,0,0" Foreground="#AABAC4"/>
                     <TextBlock Text="Befunde" Margin="12,18,0,0" Foreground="#AABAC4"/>
                     <TextBlock Text="Verlauf" Margin="12,18,0,0" Foreground="#AABAC4"/>
                 </StackPanel>
-                <Border Grid.Row="3" Background="#0E211D" BorderBrush="#1C523F" BorderThickness="1" CornerRadius="10" Padding="13">
+                <Border Grid.Row="3" Background="#0E211D" BorderBrush="#1C523F" BorderThickness="1" CornerRadius="12" Padding="13">
                     <StackPanel>
                         <TextBlock Text="LOKAL UND PRIVAT" Foreground="{StaticResource Green}" FontWeight="SemiBold"/>
                         <TextBlock Text="Keine Cloud. Keine Telemetrie." Foreground="#8FA8A0" Margin="0,5,0,0" FontSize="12"/>
@@ -387,7 +413,7 @@ Add-Type -AssemblyName PresentationFramework, PresentationCore, WindowsBase
                     <TextBlock x:Name="Headline" Text="Dein System wird beobachtet." FontSize="27" FontWeight="SemiBold"/>
                     <TextBlock Text="Read-only: TrackerRadar veraendert nichts." Foreground="#91A5B2" Margin="0,5,0,0"/>
                 </StackPanel>
-                <Button x:Name="ScanButton" Grid.Column="1" Content="Jetzt pruefen" MinWidth="130"/>
+                <Button x:Name="ScanButton" Grid.Column="1" Content="Jetzt pruefen" MinWidth="130" Height="60"/>
             </Grid>
 
             <Grid Grid.Row="1" Margin="0,22,0,18">
@@ -396,20 +422,20 @@ Add-Type -AssemblyName PresentationFramework, PresentationCore, WindowsBase
                     <ColumnDefinition Width="*"/><ColumnDefinition Width="14"/>
                     <ColumnDefinition Width="*"/>
                 </Grid.ColumnDefinitions>
-                <Border Grid.Column="0" Background="{StaticResource Panel}" BorderBrush="{StaticResource Line}" BorderThickness="1" CornerRadius="10" Padding="17">
+                <Border Grid.Column="0" Background="{StaticResource Panel}" BorderBrush="{StaticResource Line}" BorderThickness="1" CornerRadius="12" Padding="17">
                     <StackPanel><TextBlock Text="Internetaktive Apps" Foreground="#92A6B2"/><TextBlock x:Name="AppsCount" Text="-" FontSize="29" FontWeight="SemiBold" Foreground="{StaticResource Accent}" Margin="0,4,0,0"/></StackPanel>
                 </Border>
-                <Border Grid.Column="2" Background="{StaticResource Panel}" BorderBrush="{StaticResource Line}" BorderThickness="1" CornerRadius="10" Padding="17">
+                <Border Grid.Column="2" Background="{StaticResource Panel}" BorderBrush="{StaticResource Line}" BorderThickness="1" CornerRadius="12" Padding="17">
                     <StackPanel><TextBlock Text="Zu pruefen" Foreground="#92A6B2"/><TextBlock x:Name="FindingsCount" Text="-" FontSize="29" FontWeight="SemiBold" Foreground="{StaticResource Amber}" Margin="0,4,0,0"/></StackPanel>
                 </Border>
-                <Border Grid.Column="4" Background="{StaticResource Panel}" BorderBrush="{StaticResource Line}" BorderThickness="1" CornerRadius="10" Padding="17">
+                <Border Grid.Column="4" Background="{StaticResource Panel}" BorderBrush="{StaticResource Line}" BorderThickness="1" CornerRadius="12" Padding="17">
                     <StackPanel><TextBlock Text="Kritisch" Foreground="#92A6B2"/><TextBlock x:Name="CriticalCount" Text="-" FontSize="29" FontWeight="SemiBold" Foreground="{StaticResource Red}" Margin="0,4,0,0"/></StackPanel>
                 </Border>
             </Grid>
 
             <Grid Grid.Row="2">
                 <Grid.ColumnDefinitions><ColumnDefinition Width="1.55*"/><ColumnDefinition Width="17"/><ColumnDefinition Width="1*"/></Grid.ColumnDefinitions>
-                <Border Grid.Column="0" Background="{StaticResource Panel}" BorderBrush="{StaticResource Line}" BorderThickness="1" CornerRadius="10">
+                <Border Grid.Column="0" Background="{StaticResource Panel}" BorderBrush="{StaticResource Line}" BorderThickness="1" CornerRadius="12" ClipToBounds="True">
                     <Grid>
                         <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/></Grid.RowDefinitions>
                         <StackPanel Margin="17,14,17,11">
@@ -426,7 +452,7 @@ Add-Type -AssemblyName PresentationFramework, PresentationCore, WindowsBase
                         </DataGrid>
                     </Grid>
                 </Border>
-                <Border Grid.Column="2" Background="{StaticResource Panel}" BorderBrush="{StaticResource Line}" BorderThickness="1" CornerRadius="10">
+                <Border Grid.Column="2" Background="{StaticResource Panel}" BorderBrush="{StaticResource Line}" BorderThickness="1" CornerRadius="12" ClipToBounds="True">
                     <Grid>
                         <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
                         <StackPanel Margin="17,14,17,11">
@@ -442,7 +468,7 @@ Add-Type -AssemblyName PresentationFramework, PresentationCore, WindowsBase
             <Grid Grid.Row="3" Margin="0,13,0,0">
                 <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
                 <TextBlock x:Name="StatusText" Text="Bereit" Foreground="#8DA1AD"/>
-                <TextBlock Grid.Column="1" Text="TrackerRadar 0.2.1 Alpha · SC LABS" Foreground="#627985"/>
+                <TextBlock Grid.Column="1" Text="TrackerRadar 0.2.2 Alpha · SC LABS" Foreground="#627985"/>
             </Grid>
         </Grid>
     </Grid>

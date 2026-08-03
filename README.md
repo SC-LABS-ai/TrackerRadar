@@ -10,7 +10,7 @@ TrackerRadar shows which applications maintain external TCP connections, where t
 
 ## Status
 
-**Version:** `0.2.1-alpha`  
+**Version:** `0.2.2-alpha`  
 **State:** local prototype, not a public security release  
 **Tested on:** Windows 11 Pro with Windows PowerShell 5.1
 
