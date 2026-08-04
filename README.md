@@ -10,7 +10,7 @@ TrackerRadar shows which applications maintain external TCP connections, where t
 
 ## Status
 
-**Version:** `0.5.1-alpha`
+**Version:** `0.5.2-alpha`
 
 **State:** local visibility and safe-control prototype, not a complete security product
 
@@ -26,6 +26,7 @@ TrackerRadar shows which applications maintain external TCP connections, where t
 - Maintain a bounded local seven-day history without a database
 - Provide Overview, Activities, Findings, History, File Access and Changes views
 - Switch the complete interface locally between German and English
+- Use a rounded dark-theme language selector matched to the primary button palette
 - Remember the selected language in the local ignored `data/ui-settings.json` file
 - Run an explicitly started five-second file-access scan for Documents, Desktop, Downloads, OneDrive, Edge profiles and Chrome profiles
 - Group file-access events by process, PID, folder category and observed operation

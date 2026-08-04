@@ -17,7 +17,7 @@ if ($SelfTest) {
     $passed = @($checks | Where-Object { $_.Passed }).Count
     [pscustomobject]@{
         Product='TrackerRadar Access Scan Wrapper'
-        Version='0.5.1-alpha'
+        Version='0.5.2-alpha'
         Passed=$passed
         Failed=($checks.Count-$passed)
         Checks=$checks

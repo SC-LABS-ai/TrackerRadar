@@ -1,10 +1,10 @@
 # TrackerRadar Alpha - Status
 
-Stand: 2026-08-04, 17:48 Uhr Europe/Berlin
+Stand: 2026-08-04, 19:49 Uhr Europe/Berlin
 
 ## Ergebnis
 
-TrackerRadar `0.5.1-alpha` ist als portable, lokale Windows-App mit Netzwerktransparenz, reversiblen Safe-Control-Funktionen, manuellem Datei-/Ordnerzugriffs-Kurzscan und vollstaendig lokaler Deutsch-/Englisch-Auswahl lauffaehig.
+TrackerRadar `0.5.2-alpha` ist als portable, lokale Windows-App mit Netzwerktransparenz, reversiblen Safe-Control-Funktionen, manuellem Datei-/Ordnerzugriffs-Kurzscan und vollstaendig lokaler Deutsch-/Englisch-Auswahl lauffaehig.
 
 - Startdatei: `Start-TrackerRadar.cmd`
 - Installation: nicht erforderlich
@@ -14,23 +14,18 @@ TrackerRadar `0.5.1-alpha` ist als portable, lokale Windows-App mit Netzwerktran
 - Cloud/Telemetrie: keine
 - Hintergrunddienst oder eigener Treiber: keiner
 
-## Neu in 0.5.1
+## Neu in 0.5.2
 
-- Sprachwahlschalter oben rechts in der Anwendung
-- vollstaendige lokale Uebersetzung von:
-  - Navigation und Seitentiteln
-  - Buttons und Statusmeldungen
-  - Tabellenueberschriften
-  - Anbieter-, Zweck-, Status- und Zugriffsbezeichnungen
-  - unterstuetzten Bestaetigungs- und Detaildialogen
-  - Dateizugriffs- und Change-Vault-Ansichten
-- getrennte UTF-8-Sprachdateien:
-  - `locales/de.json`
-  - `locales/en.json`
-- lokales Lokalisierungsmodul `TrackerRadar.Localization.ps1`
-- Spracheinstellung ausschliesslich unter `data/ui-settings.json`
-- keine Cloud-Uebersetzung und keine neue Runtime
-- Sprachwechsel verwendet den letzten lokalen Scan erneut und loest keinen neuen Systemscan aus
+- Windows-Standard-Dropdown durch ein eigenes dunkles TrackerRadar-Template ersetzt
+- Sprachfeld jetzt passend zum Gesamtbild:
+  - dunkler Hintergrund
+  - teal-farbene Umrandung
+  - abgerundete Ecken
+  - passende Hover-, Auswahl- und Offen-Zustaende
+  - dunkle Dropdown-Eintraege ohne weisse Windows-Systemflaeche
+- Sprachfeld und Haupt-Scan-Button auf einheitliche **52 Pixel** Hoehe ausgerichtet
+- WPF Layout-Rounding und Device-Pixel-Snapping aktiviert
+- keine Aenderung an Monitoring, Datei-Scan, Firewall, Autostart oder Rollback
 
 ## Verifizierte Funktionen
 
@@ -40,9 +35,11 @@ TrackerRadar `0.5.1-alpha` ist als portable, lokale Windows-App mit Netzwerktran
 - Dateizugriffs-Parser und Datenschutzregeln: **6/6 PASS**
 - Dateizugriffs-UAC-Wrapper: **3/3 PASS**
 - Lokalisierungsdateien, Unicode und Speicherung: **8/8 PASS**
-- zweisprachige UI und Navigation: **14/14 PASS**
+- Ansichten, Sprachen und UI-Style-Gates: **17/17 PASS**
+- eigenes Sprach-Template geladen: **PASS**
+- Sprachfeld-Hoehe 52 Pixel: **PASS**
+- Scan-Button-Hoehe 52 Pixel: **PASS**
 - sechs Ansichten in beiden Sprachen: **PASS**
-- German Unicode labels verified by code point: **PASS**
 - `Unbekannter Dienst` / `Unknown service`: **PASS**
 - Sprachwahl nach Neustart wiederhergestellt: **PASS**
 - GUI-Start: **PASS**
@@ -50,20 +47,21 @@ TrackerRadar `0.5.1-alpha` ist als portable, lokale Windows-App mit Netzwerktran
 
 ## Letzter Regressionstest
 
-- Working Set nach 10 Sekunden: **198,8 MB**
-- privater Speicher nach 10 Sekunden: **180,7 MB**
-- CPU-Zeit nach 10 Sekunden: **3,52 Sekunden**
+- Working Set nach 10 Sekunden: **175,6 MB**
+- privater Speicher nach 10 Sekunden: **155,1 MB**
+- CPU-Zeit nach 10 Sekunden: **3,94 Sekunden**
+- Ziel unter 180 MB Working Set: **PASS**
 - Ziel unter 200 MB Working Set: **PASS**
 - GUI-Fehler: **keine**
 
 ## Portable-Paket
 
-- Datei: `dist/TrackerRadar-0.5.1-alpha-portable.zip`
-- Groesse: **234.976 Bytes**
-- SHA-256: `8ECD4C966F93A70B67EFD778713F61BDA06BBA679EF06EB59A28D529D01ED1DA`
+- Datei: `dist/TrackerRadar-0.5.2-alpha-portable.zip`
+- Groesse: **236.231 Bytes**
+- SHA-256: `55947FA6630B6FB888400DEEDB7D3D18D580537BE5EF330C5E47B4C657241239`
 - Hashdatei stimmt ueberein: **PASS**
 - Sprachmodul und beide Locale-Dateien im ZIP: **PASS**
-- App-, Lokalisierungs- und zweisprachiger UI-Test aus frischer Entpackung: **PASS**
+- App-, Lokalisierungs- und UI-Test aus frischer Entpackung: **PASS**
 
 ## Datenschutz
 
@@ -91,4 +89,4 @@ TrackerRadar `0.5.1-alpha` ist als portable, lokale Windows-App mit Netzwerktran
 
 ## Bewertung
 
-Version 0.5.1 macht TrackerRadar fuer deutsch- und englischsprachige Endnutzer verwendbar, ohne die Architektur aufzublaehen. Die Uebersetzung ist vollstaendig lokal, separat testbar und Bestandteil des Portable-Builds. Netzwerk-, Access-Scan- und Safe-Control-Verhalten wurden nicht veraendert.
+Version 0.5.2 behebt den sichtbaren Stilbruch des hellen Windows-Sprachfelds, ohne wichtige Produktfunktionen anzufassen. Die Oberflaeche wirkt nun konsistent dunkel, abgerundet und farblich an die vorhandenen TrackerRadar-Buttons angepasst. Netzwerk-, Access-Scan- und Safe-Control-Verhalten wurden nicht veraendert.

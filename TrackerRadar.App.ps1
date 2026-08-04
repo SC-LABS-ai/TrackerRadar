@@ -7,7 +7,7 @@ param(
 Set-StrictMode -Version 2.0
 $ErrorActionPreference = 'Stop'
 
-$script:Version = '0.5.1-alpha'
+$script:Version = '0.5.2-alpha'
 $script:Root = Split-Path -Parent $MyInvocation.MyCommand.Path
 if ((Split-Path -Leaf $script:Root) -eq '_development') { $script:Root = Split-Path -Parent $script:Root }
 $script:Data = Join-Path $script:Root 'data'
@@ -703,7 +703,7 @@ Add-Type -AssemblyName PresentationFramework, PresentationCore, WindowsBase
 [xml]$xaml = @'
 <Window xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="TrackerRadar 0.5.1 Alpha | SC LABS" Width="1180" Height="720" MinWidth="960" MinHeight="620"
+        Title="TrackerRadar 0.5.2 Alpha | SC LABS" Width="1180" Height="720" MinWidth="960" MinHeight="620" UseLayoutRounding="True" SnapsToDevicePixels="True"
         WindowStartupLocation="CenterScreen" Background="#071018" Foreground="#ECF3F7"
         FontFamily="Segoe UI" FontSize="14">
     <Window.Resources>
@@ -751,6 +751,80 @@ Add-Type -AssemblyName PresentationFramework, PresentationCore, WindowsBase
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True"><Setter TargetName="NavChrome" Property="Background" Value="#102630"/></Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <Style x:Key="LanguageComboBoxItem" TargetType="ComboBoxItem">
+            <Setter Property="Foreground" Value="#DCE8ED"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Padding" Value="12,9"/>
+            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ComboBoxItem">
+                        <Border x:Name="ItemChrome" Background="{TemplateBinding Background}" CornerRadius="8" Padding="{TemplateBinding Padding}">
+                            <ContentPresenter VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsHighlighted" Value="True">
+                                <Setter TargetName="ItemChrome" Property="Background" Value="#174A47"/>
+                                <Setter Property="Foreground" Value="#FFFFFF"/>
+                            </Trigger>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter TargetName="ItemChrome" Property="Background" Value="#103A38"/>
+                                <Setter Property="Foreground" Value="#6BE7D6"/>
+                                <Setter Property="FontWeight" Value="SemiBold"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <Style x:Key="LanguageComboBox" TargetType="ComboBox">
+            <Setter Property="Foreground" Value="#ECF3F7"/>
+            <Setter Property="Background" Value="#0D1922"/>
+            <Setter Property="BorderBrush" Value="#24776F"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Height" Value="52"/>
+            <Setter Property="MinWidth" Value="132"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="ItemContainerStyle" Value="{StaticResource LanguageComboBoxItem}"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ComboBox">
+                        <Grid>
+                            <Border x:Name="ComboChrome" Background="{TemplateBinding Background}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" CornerRadius="11">
+                                <Grid>
+                                    <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="34"/></Grid.ColumnDefinitions>
+                                    <ContentPresenter Margin="13,0,7,0" VerticalAlignment="Center" HorizontalAlignment="Left" Content="{TemplateBinding SelectionBoxItem}" ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}"/>
+                                    <Border Grid.Column="1" Margin="0,7,7,7" Background="#102630" CornerRadius="8">
+                                        <Path Width="9" Height="5" Stretch="Fill" Fill="#6BE7D6" Data="M 0 0 L 4.5 5 L 9 0" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Border>
+                                </Grid>
+                            </Border>
+                            <ToggleButton Focusable="False" Background="Transparent" BorderThickness="0" ClickMode="Press" IsChecked="{Binding IsDropDownOpen, RelativeSource={RelativeSource TemplatedParent}, Mode=TwoWay}">
+                                <ToggleButton.Template><ControlTemplate TargetType="ToggleButton"><Border Background="Transparent"/></ControlTemplate></ToggleButton.Template>
+                            </ToggleButton>
+                            <Popup x:Name="PART_Popup" Placement="Bottom" AllowsTransparency="True" Focusable="False" PopupAnimation="Fade" IsOpen="{TemplateBinding IsDropDownOpen}">
+                                <Border Margin="0,5,0,0" MinWidth="{TemplateBinding ActualWidth}" Background="#0B1720" BorderBrush="#25D7C0" BorderThickness="1" CornerRadius="11" Padding="5">
+                                    <ScrollViewer MaxHeight="220" VerticalScrollBarVisibility="Auto"><ItemsPresenter/></ScrollViewer>
+                                </Border>
+                            </Popup>
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="ComboChrome" Property="Background" Value="#102630"/>
+                                <Setter TargetName="ComboChrome" Property="BorderBrush" Value="#25D7C0"/>
+                            </Trigger>
+                            <Trigger Property="IsKeyboardFocusWithin" Value="True"><Setter TargetName="ComboChrome" Property="BorderBrush" Value="#25D7C0"/></Trigger>
+                            <Trigger Property="IsDropDownOpen" Value="True">
+                                <Setter TargetName="ComboChrome" Property="Background" Value="#103A38"/>
+                                <Setter TargetName="ComboChrome" Property="BorderBrush" Value="#6BE7D6"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False"><Setter TargetName="ComboChrome" Property="Opacity" Value="0.55"/></Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
                 </Setter.Value>
@@ -810,13 +884,13 @@ Add-Type -AssemblyName PresentationFramework, PresentationCore, WindowsBase
         <Grid Grid.Column="1" Margin="27,21,27,18">
             <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
             <Grid>
-                <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/><ColumnDefinition Width="12"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
-                <StackPanel><TextBlock x:Name="ViewTitle" Text="Uebersicht" FontSize="27" FontWeight="SemiBold"/><TextBlock x:Name="ViewSubtitle" Text="Neue Aktivitaeten und wichtige Aenderungen auf einen Blick." Foreground="#91A5B2" Margin="0,5,0,0"/></StackPanel>
-                <ComboBox x:Name="LanguageSelector" Grid.Column="1" Width="120" Height="40" VerticalAlignment="Center" Background="#10212B" Foreground="#ECF3F7" BorderBrush="#25D7C0" BorderThickness="1" Padding="8,4">
+                <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/><ColumnDefinition Width="14"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                <StackPanel VerticalAlignment="Center"><TextBlock x:Name="ViewTitle" Text="Uebersicht" FontSize="27" FontWeight="SemiBold"/><TextBlock x:Name="ViewSubtitle" Text="Neue Aktivitaeten und wichtige Aenderungen auf einen Blick." Foreground="#91A5B2" Margin="0,5,0,0"/></StackPanel>
+                <ComboBox x:Name="LanguageSelector" Grid.Column="1" Style="{StaticResource LanguageComboBox}" VerticalAlignment="Center" ToolTip="Deutsch / English">
                     <ComboBoxItem Tag="de" Content="Deutsch"/>
                     <ComboBoxItem Tag="en" Content="English"/>
                 </ComboBox>
-                <Button x:Name="ScanButton" Grid.Column="3" Content="Jetzt pruefen" MinWidth="130" Height="60"/>
+                <Button x:Name="ScanButton" Grid.Column="3" Content="Jetzt pruefen" MinWidth="132" Height="52" VerticalAlignment="Center"/>
             </Grid>
 
             <Grid Grid.Row="1" Margin="0,20,0,0">
@@ -889,7 +963,7 @@ Add-Type -AssemblyName PresentationFramework, PresentationCore, WindowsBase
                 </Border>
             </Grid>
 
-            <Grid Grid.Row="2" Margin="0,13,0,0"><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions><TextBlock x:Name="StatusText" Text="Bereit" Foreground="#8DA1AD"/><TextBlock Grid.Column="1" Text="TrackerRadar 0.5.1 Alpha | SC LABS" Foreground="#627985"/></Grid>
+            <Grid Grid.Row="2" Margin="0,13,0,0"><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions><TextBlock x:Name="StatusText" Text="Bereit" Foreground="#8DA1AD"/><TextBlock Grid.Column="1" Text="TrackerRadar 0.5.2 Alpha | SC LABS" Foreground="#627985"/></Grid>
         </Grid>
     </Grid>
 </Window>
@@ -1339,6 +1413,9 @@ if ($UiSmokeTest) {
             $visibleCount = @($overviewView,$activitiesView,$findingsView,$historyView,$accessView,$changesView | Where-Object { $_.Visibility -eq 'Visible' }).Count
             $results += [pscustomobject]@{ Type='View'; Name=$name; Passed=($visibleCount -eq 1); Detail="$visibleCount visible" }
         }
+        $results += [pscustomobject]@{ Type='UiStyle'; Name='language-template'; Passed=($null -ne $languageSelector.Template); Detail=if ($null -ne $languageSelector.Template) { 'custom template loaded' } else { 'missing template' } }
+        $results += [pscustomobject]@{ Type='UiStyle'; Name='language-height'; Passed=([double]$languageSelector.Height -eq 52); Detail=[string]$languageSelector.Height }
+        $results += [pscustomobject]@{ Type='UiStyle'; Name='scan-height'; Passed=([double]$scanButton.Height -eq 52); Detail=[string]$scanButton.Height }
         $originalLanguage = $script:Language
         foreach ($language in @('de','en')) {
             Set-Language -Language $language -Save $false

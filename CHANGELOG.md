@@ -8,6 +8,25 @@ All notable changes to TrackerRadar are documented here.
 - Richer operation classification without overstating intent
 - Compiled Windows build and signed installer
 
+## [0.5.2-alpha] - 2026-08-04
+
+### Changed
+- Replaced the Windows default language drop-down with a fully local TrackerRadar dark-theme control
+- Added rounded corners, matching teal borders, hover/open states and dark drop-down items
+- Aligned the language selector and primary scan button to the same 52-pixel control height
+- Enabled WPF layout rounding and device-pixel snapping for cleaner rendering
+
+### Safety
+- UI-only change: monitoring, file-access scanning, firewall control, startup control and rollback behavior are unchanged
+- Language selection remains local under `data/ui-settings.json`
+
+### Verified
+- Application core: 10/10 passed
+- Six views and German/English UI switching: 14/14 passed
+- Real WPF candidate launch: passed with no GUI errors
+- Full regression working set after ten seconds: 175.6 MB
+- Full regression private memory after ten seconds: 155.1 MB
+
 ## [0.5.1-alpha] - 2026-08-04
 
 ### Added
