@@ -204,7 +204,7 @@ function Invoke-SelfTest {
     )
     $result = [pscustomobject]@{
         Product = 'TrackerRadar Access Scan'
-        Version = '0.5.0-alpha'
+        Version = '0.5.1-alpha'
         Passed = @($checks | Where-Object { $_.Passed }).Count
         Failed = @($checks | Where-Object { -not $_.Passed }).Count
         Checks = $checks
@@ -251,7 +251,7 @@ function Invoke-AccessScan {
         $groups = @(Convert-AccessCsv -CsvPath $csv -Roots $roots -ProcessMap $processMap)
         $result = [pscustomobject]@{
             Product = 'TrackerRadar Access Scan'
-            Version = '0.5.0-alpha'
+            Version = '0.5.1-alpha'
             Timestamp = (Get-Date).ToString('o')
             Mode = 'UserFolders'
             Passed = $true

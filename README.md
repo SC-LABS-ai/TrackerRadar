@@ -10,7 +10,7 @@ TrackerRadar shows which applications maintain external TCP connections, where t
 
 ## Status
 
-**Version:** `0.5.0-alpha`
+**Version:** `0.5.1-alpha`
 
 **State:** local visibility and safe-control prototype, not a complete security product
 
@@ -25,6 +25,8 @@ TrackerRadar shows which applications maintain external TCP connections, where t
 - Detect new, changed or removed common startup entries
 - Maintain a bounded local seven-day history without a database
 - Provide Overview, Activities, Findings, History, File Access and Changes views
+- Switch the complete interface locally between German and English
+- Remember the selected language in the local ignored `data/ui-settings.json` file
 - Run an explicitly started five-second file-access scan for Documents, Desktop, Downloads, OneDrive, Edge profiles and Chrome profiles
 - Group file-access events by process, PID, folder category and observed operation
 - Store no document contents and no individual file names in the access-scan result
@@ -41,9 +43,10 @@ No installation is required for the alpha.
 
 1. Download or clone the repository.
 2. Double-click `Start-TrackerRadar.cmd`.
-3. Select **Jetzt pruefen** for a network and startup snapshot.
-4. Open **Dateizugriffe** and select **5-Sekunden-Scan starten** for a short local user-folder scan.
-5. Confirm the normal Windows UAC prompt when starting the file-access scan or a protected control action.
+3. Select **Deutsch** or **English** from the language selector in the upper-right corner.
+4. Select **Jetzt prüfen / Scan now** for a network and startup snapshot.
+5. Open **Dateizugriffe / File access** and start the five-second user-folder scan when needed.
+6. Confirm the normal Windows UAC prompt when starting the file-access scan or a protected control action.
 
 TrackerRadar does not elevate silently. The main interface runs without persistent administrator rights.
 
@@ -66,7 +69,8 @@ The regression test covers:
 - control UAC wrapper: 3 checks
 - file-access parser and privacy rules: 6 checks
 - file-access UAC wrapper: 3 checks
-- navigation: 6 views
+- localization files, Unicode and persistence: 8 checks
+- bilingual UI and navigation: 14 checks
 - WPF launch, GUI errors and memory usage
 
 Machine-specific results are stored in the ignored `data/` directory.
@@ -110,4 +114,4 @@ Copyright 2026 SC LABS. All rights reserved. No open-source license has been sel
 
 ## Kurzbeschreibung auf Deutsch
 
-TrackerRadar ist eine portable, lokale Windows-App im SC-LABS-Design. Sie zeigt aktive externe Verbindungen, erklaert bekannte Ziele, erkennt neue Aktivitaeten gegenueber einer lokalen Baseline und fuehrt einen begrenzten Sieben-Tage-Verlauf. Version 0.5 ergaenzt einen bewusst gestarteten Fuenf-Sekunden-Scan fuer ausgewaehlte Benutzerordner und Browserprofile. Angezeigt werden nur gebuendelte Prozess-, Ordner- und Zugriffsinformationen; Dateiinhalte und einzelne Dateinamen werden nicht im Ergebnis gespeichert. Firewall- und Autostartaktionen bleiben bestaetigungspflichtig und rueckgaengig machbar.
+TrackerRadar ist eine portable, lokale Windows-App im SC-LABS-Design. Sie zeigt aktive externe Verbindungen, erklärt bekannte Ziele, erkennt neue Aktivitäten gegenüber einer lokalen Baseline und führt einen begrenzten Sieben-Tage-Verlauf. Die vollständige Oberfläche kann lokal zwischen Deutsch und Englisch umgeschaltet werden; die Auswahl wird ausschließlich lokal gespeichert. Version 0.5 ergänzt einen bewusst gestarteten Fünf-Sekunden-Scan für ausgewählte Benutzerordner und Browserprofile. Angezeigt werden nur gebündelte Prozess-, Ordner- und Zugriffsinformationen; Dateiinhalte und einzelne Dateinamen werden nicht im Ergebnis gespeichert. Firewall- und Autostartaktionen bleiben bestätigungspflichtig und rückgängig machbar.

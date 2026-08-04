@@ -8,6 +8,23 @@ All notable changes to TrackerRadar are documented here.
 - Richer operation classification without overstating intent
 - Compiled Windows build and signed installer
 
+## [0.5.1-alpha] - 2026-08-04
+
+### Added
+- Complete local German and English interface selection
+- Language selector in the application header
+- Local persistence of the selected language without an account or cloud service
+- Translation of navigation, page titles, table headers, status messages, provider labels and supported confirmation dialogs
+- Separate locale files and localization module included in the portable package
+
+### Verified
+- Localization files, parallel keys, Unicode and persistence: 8/8 passed
+- Bilingual UI and navigation: 14/14 passed
+- German and English both reload correctly after a local settings change
+- GUI launch: passed with no errors
+- Working set after ten seconds: 192.9 MB
+- Private memory after ten seconds: 174.7 MB
+
 ## [0.5.0-alpha] - 2026-08-04
 
 ### Added

@@ -7,7 +7,7 @@ param(
 Set-StrictMode -Version 2.0
 $ErrorActionPreference = 'Stop'
 
-$script:Version = '0.5.0-alpha'
+$script:Version = '0.5.1-alpha'
 $script:Root = Split-Path -Parent $MyInvocation.MyCommand.Path
 if ((Split-Path -Leaf $script:Root) -eq '_development') { $script:Root = Split-Path -Parent $script:Root }
 $script:Data = Join-Path $script:Root 'data'
@@ -35,6 +35,13 @@ function Write-JsonFile {
     $Value | ConvertTo-Json -Depth $Depth | Set-Content -LiteralPath $Path -Encoding UTF8
 }
 
+$localizationScript = Join-Path $script:Root 'TrackerRadar.Localization.ps1'
+if (-not (Test-Path -LiteralPath $localizationScript -PathType Leaf)) { throw 'TrackerRadar.Localization.ps1 fehlt.' }
+. $localizationScript
+Initialize-TrackerRadarLocalization -Root $script:Root -Data $script:Data
+$script:LastSnapshot = $null
+$script:CurrentView = 'Overview'
+$script:LanguageChanging = $false
 function Get-StringHash {
     param([string]$Value)
     $sha = [System.Security.Cryptography.SHA256]::Create()
@@ -696,7 +703,7 @@ Add-Type -AssemblyName PresentationFramework, PresentationCore, WindowsBase
 [xml]$xaml = @'
 <Window xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="TrackerRadar 0.5 Alpha | SC LABS" Width="1180" Height="720" MinWidth="960" MinHeight="620"
+        Title="TrackerRadar 0.5.1 Alpha | SC LABS" Width="1180" Height="720" MinWidth="960" MinHeight="620"
         WindowStartupLocation="CenterScreen" Background="#071018" Foreground="#ECF3F7"
         FontFamily="Segoe UI" FontSize="14">
     <Window.Resources>
@@ -784,7 +791,7 @@ Add-Type -AssemblyName PresentationFramework, PresentationCore, WindowsBase
                         <StackPanel Margin="10,6,0,0"><TextBlock Text="SC LABS" FontSize="16" FontWeight="Bold"/><TextBlock Text="PRODUCT SERIES" FontSize="9" Foreground="#718B99"/></StackPanel>
                     </StackPanel>
                     <Border Margin="0,22,0,0" Height="132" CornerRadius="12" Background="#06101A" BorderBrush="#234455" BorderThickness="1" ClipToBounds="True"><Image x:Name="TrackerRadarLogo" Stretch="Uniform"/></Border>
-                    <TextBlock Text="Sieh, was Programme wirklich tun." Margin="0,10,0,0" Foreground="#8EA2AF" TextWrapping="Wrap"/>
+                    <TextBlock x:Name="TaglineText" Text="Sieh, was Programme wirklich tun." Margin="0,10,0,0" Foreground="#8EA2AF" TextWrapping="Wrap"/>
                 </StackPanel>
                 <StackPanel Grid.Row="1" Margin="0,30,0,0">
                     <Button x:Name="NavOverview" Style="{StaticResource NavButton}" Content="Uebersicht"/>
@@ -795,7 +802,7 @@ Add-Type -AssemblyName PresentationFramework, PresentationCore, WindowsBase
                     <Button x:Name="NavChanges" Style="{StaticResource NavButton}" Content="Aenderungen"/>
                 </StackPanel>
                 <Border Grid.Row="3" Background="#0E211D" BorderBrush="#1C523F" BorderThickness="1" CornerRadius="12" Padding="13">
-                    <StackPanel><TextBlock Text="LOKAL UND PRIVAT" Foreground="{StaticResource Green}" FontWeight="SemiBold"/><TextBlock Text="Keine Cloud. Keine Telemetrie." Foreground="#8FA8A0" Margin="0,5,0,0" FontSize="12"/></StackPanel>
+                    <StackPanel><TextBlock x:Name="PrivacyTitleText" Text="LOKAL UND PRIVAT" Foreground="{StaticResource Green}" FontWeight="SemiBold"/><TextBlock x:Name="PrivacyBodyText" Text="Keine Cloud. Keine Telemetrie." Foreground="#8FA8A0" Margin="0,5,0,0" FontSize="12"/></StackPanel>
                 </Border>
             </Grid>
         </Border>
@@ -803,9 +810,13 @@ Add-Type -AssemblyName PresentationFramework, PresentationCore, WindowsBase
         <Grid Grid.Column="1" Margin="27,21,27,18">
             <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
             <Grid>
-                <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/><ColumnDefinition Width="12"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
                 <StackPanel><TextBlock x:Name="ViewTitle" Text="Uebersicht" FontSize="27" FontWeight="SemiBold"/><TextBlock x:Name="ViewSubtitle" Text="Neue Aktivitaeten und wichtige Aenderungen auf einen Blick." Foreground="#91A5B2" Margin="0,5,0,0"/></StackPanel>
-                <Button x:Name="ScanButton" Grid.Column="1" Content="Jetzt pruefen" MinWidth="130" Height="60"/>
+                <ComboBox x:Name="LanguageSelector" Grid.Column="1" Width="120" Height="40" VerticalAlignment="Center" Background="#10212B" Foreground="#ECF3F7" BorderBrush="#25D7C0" BorderThickness="1" Padding="8,4">
+                    <ComboBoxItem Tag="de" Content="Deutsch"/>
+                    <ComboBoxItem Tag="en" Content="English"/>
+                </ComboBox>
+                <Button x:Name="ScanButton" Grid.Column="3" Content="Jetzt pruefen" MinWidth="130" Height="60"/>
             </Grid>
 
             <Grid Grid.Row="1" Margin="0,20,0,0">
@@ -813,21 +824,21 @@ Add-Type -AssemblyName PresentationFramework, PresentationCore, WindowsBase
                     <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/></Grid.RowDefinitions>
                     <Grid Margin="0,0,0,18">
                         <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="14"/><ColumnDefinition Width="*"/><ColumnDefinition Width="14"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
-                        <Border Grid.Column="0" Background="{StaticResource Panel}" BorderBrush="{StaticResource Line}" BorderThickness="1" CornerRadius="12" Padding="17"><StackPanel><TextBlock Text="Internetaktive Apps" Foreground="#92A6B2"/><TextBlock x:Name="AppsCount" Text="-" FontSize="29" FontWeight="SemiBold" Foreground="{StaticResource Accent}" Margin="0,4,0,0"/></StackPanel></Border>
-                        <Border Grid.Column="2" Background="{StaticResource Panel}" BorderBrush="{StaticResource Line}" BorderThickness="1" CornerRadius="12" Padding="17"><StackPanel><TextBlock Text="Neu entdeckt" Foreground="#92A6B2"/><TextBlock x:Name="NewCount" Text="-" FontSize="29" FontWeight="SemiBold" Foreground="{StaticResource Amber}" Margin="0,4,0,0"/></StackPanel></Border>
-                        <Border Grid.Column="4" Background="{StaticResource Panel}" BorderBrush="{StaticResource Line}" BorderThickness="1" CornerRadius="12" Padding="17"><StackPanel><TextBlock Text="Befunde" Foreground="#92A6B2"/><TextBlock x:Name="FindingsCount" Text="-" FontSize="29" FontWeight="SemiBold" Foreground="{StaticResource Red}" Margin="0,4,0,0"/><TextBlock x:Name="CriticalHint" Text="0 kritisch" FontSize="11" Foreground="#8DA1AD"/></StackPanel></Border>
+                        <Border Grid.Column="0" Background="{StaticResource Panel}" BorderBrush="{StaticResource Line}" BorderThickness="1" CornerRadius="12" Padding="17"><StackPanel><TextBlock x:Name="OverviewAppsLabel" Text="Internetaktive Apps" Foreground="#92A6B2"/><TextBlock x:Name="AppsCount" Text="-" FontSize="29" FontWeight="SemiBold" Foreground="{StaticResource Accent}" Margin="0,4,0,0"/></StackPanel></Border>
+                        <Border Grid.Column="2" Background="{StaticResource Panel}" BorderBrush="{StaticResource Line}" BorderThickness="1" CornerRadius="12" Padding="17"><StackPanel><TextBlock x:Name="OverviewNewLabel" Text="Neu entdeckt" Foreground="#92A6B2"/><TextBlock x:Name="NewCount" Text="-" FontSize="29" FontWeight="SemiBold" Foreground="{StaticResource Amber}" Margin="0,4,0,0"/></StackPanel></Border>
+                        <Border Grid.Column="4" Background="{StaticResource Panel}" BorderBrush="{StaticResource Line}" BorderThickness="1" CornerRadius="12" Padding="17"><StackPanel><TextBlock x:Name="OverviewFindingsLabel" Text="Befunde" Foreground="#92A6B2"/><TextBlock x:Name="FindingsCount" Text="-" FontSize="29" FontWeight="SemiBold" Foreground="{StaticResource Red}" Margin="0,4,0,0"/><TextBlock x:Name="CriticalHint" Text="0 kritisch" FontSize="11" Foreground="#8DA1AD"/></StackPanel></Border>
                     </Grid>
                     <Grid Grid.Row="1">
                         <Grid.ColumnDefinitions><ColumnDefinition Width="1.55*"/><ColumnDefinition Width="17"/><ColumnDefinition Width="1*"/></Grid.ColumnDefinitions>
                         <Border Grid.Column="0" Background="{StaticResource Panel}" BorderBrush="{StaticResource Line}" BorderThickness="1" CornerRadius="12" ClipToBounds="True">
                             <Grid><Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/></Grid.RowDefinitions>
-                                <StackPanel Margin="17,14,17,11"><TextBlock Text="Aktuelle Aktivitaeten" FontSize="18" FontWeight="SemiBold"/><TextBlock Text="Ziele werden aus dem lokalen DNS-Cache erklaert" Foreground="#8399A6" FontSize="12" Margin="0,3,0,0"/></StackPanel>
+                                <StackPanel Margin="17,14,17,11"><TextBlock x:Name="CurrentActivitiesTitle" Text="Aktuelle Aktivitaeten" FontSize="18" FontWeight="SemiBold"/><TextBlock x:Name="CurrentActivitiesHint" Text="Ziele werden aus dem lokalen DNS-Cache erklaert" Foreground="#8399A6" FontSize="12" Margin="0,3,0,0"/></StackPanel>
                                 <DataGrid x:Name="OverviewActivityGrid" Grid.Row="1" AlternationCount="2"><DataGrid.Columns><DataGridTextColumn Header="APP" Binding="{Binding App}" Width="1.15*"/><DataGridTextColumn Header="ZIEL" Binding="{Binding Target}" Width="1.5*"/><DataGridTextColumn Header="STATUS" Binding="{Binding Change}" Width="105"/></DataGrid.Columns></DataGrid>
                             </Grid>
                         </Border>
                         <Border Grid.Column="2" Background="{StaticResource Panel}" BorderBrush="{StaticResource Line}" BorderThickness="1" CornerRadius="12" ClipToBounds="True">
                             <Grid><Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
-                                <StackPanel Margin="17,14,17,11"><TextBlock Text="Wichtigste Befunde" FontSize="18" FontWeight="SemiBold"/><TextBlock Text="Gebuedelt statt Warnungsflut" Foreground="#8399A6" FontSize="12" Margin="0,3,0,0"/></StackPanel>
+                                <StackPanel Margin="17,14,17,11"><TextBlock x:Name="ImportantFindingsTitle" Text="Wichtigste Befunde" FontSize="18" FontWeight="SemiBold"/><TextBlock x:Name="ImportantFindingsHint" Text="Gebuedelt statt Warnungsflut" Foreground="#8399A6" FontSize="12" Margin="0,3,0,0"/></StackPanel>
                                 <ListBox x:Name="OverviewFindingsList" Grid.Row="1" Background="Transparent" BorderThickness="0" Foreground="#ECF3F7" DisplayMemberPath="Summary" Padding="10"/>
                                 <Button x:Name="ReportButton" Grid.Row="2" Content="Lokalen Bericht oeffnen" Margin="15"/>
                             </Grid>
@@ -837,7 +848,7 @@ Add-Type -AssemblyName PresentationFramework, PresentationCore, WindowsBase
 
                 <Border x:Name="ActivitiesView" Visibility="Collapsed" Background="{StaticResource Panel}" BorderBrush="{StaticResource Line}" BorderThickness="1" CornerRadius="12" ClipToBounds="True">
                     <Grid><Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
-                        <StackPanel Margin="17,14,17,11"><TextBlock Text="Alle aktiven Internetverbindungen" FontSize="18" FontWeight="SemiBold"/><TextBlock Text="Domain, Anbieter, IP-Adresse und erster Erkennungszeitpunkt" Foreground="#8399A6" FontSize="12" Margin="0,3,0,0"/></StackPanel>
+                        <StackPanel Margin="17,14,17,11"><TextBlock x:Name="ActivitiesPanelTitle" Text="Alle aktiven Internetverbindungen" FontSize="18" FontWeight="SemiBold"/><TextBlock x:Name="ActivitiesPanelHint" Text="Domain, Anbieter, IP-Adresse und erster Erkennungszeitpunkt" Foreground="#8399A6" FontSize="12" Margin="0,3,0,0"/></StackPanel>
                         <DataGrid x:Name="ActivityGrid" Grid.Row="1" AlternationCount="2"><DataGrid.Columns><DataGridTextColumn Header="APP" Binding="{Binding App}" Width="1.1*"/><DataGridTextColumn Header="ZIEL" Binding="{Binding Target}" Width="1.35*"/><DataGridTextColumn Header="ANBIETER" Binding="{Binding Provider}" Width="1.15*"/><DataGridTextColumn Header="IP" Binding="{Binding Address}" Width="1.05*"/><DataGridTextColumn Header="PORT" Binding="{Binding Port}" Width="60"/><DataGridTextColumn Header="STATUS" Binding="{Binding Change}" Width="100"/><DataGridTextColumn Header="ERSTMALS" Binding="{Binding FirstSeenDisplay}" Width="105"/></DataGrid.Columns></DataGrid>
                         <Button x:Name="BlockInternetButton" Grid.Row="2" Content="Internetzugriff blockieren" HorizontalAlignment="Right" MinWidth="215" Margin="15"/>
                     </Grid>
@@ -845,7 +856,7 @@ Add-Type -AssemblyName PresentationFramework, PresentationCore, WindowsBase
 
                 <Border x:Name="FindingsView" Visibility="Collapsed" Background="{StaticResource Panel}" BorderBrush="{StaticResource Line}" BorderThickness="1" CornerRadius="12" ClipToBounds="True">
                     <Grid><Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
-                        <StackPanel Margin="17,14,17,11"><TextBlock Text="Befunde und Systemaenderungen" FontSize="18" FontWeight="SemiBold"/><TextBlock Text="Neue oder veraenderte Autostarts und auffaelliges Prozessverhalten" Foreground="#8399A6" FontSize="12" Margin="0,3,0,0"/></StackPanel>
+                        <StackPanel Margin="17,14,17,11"><TextBlock x:Name="FindingsPanelTitle" Text="Befunde und Systemaenderungen" FontSize="18" FontWeight="SemiBold"/><TextBlock x:Name="FindingsPanelHint" Text="Neue oder veraenderte Autostarts und auffaelliges Prozessverhalten" Foreground="#8399A6" FontSize="12" Margin="0,3,0,0"/></StackPanel>
                         <DataGrid x:Name="FindingsGrid" Grid.Row="1" AlternationCount="2"><DataGrid.Columns><DataGridTextColumn Header="STUFE" Binding="{Binding Level}" Width="95"/><DataGridTextColumn Header="APP" Binding="{Binding App}" Width="1.0*"/><DataGridTextColumn Header="BEGRUENDUNG" Binding="{Binding Summary}" Width="2.8*"/><DataGridTextColumn Header="PUNKTE" Binding="{Binding Score}" Width="70"/></DataGrid.Columns></DataGrid>
                         <Button x:Name="DisableStartupButton" Grid.Row="2" Content="Ausgewaehlten Autostart deaktivieren" HorizontalAlignment="Right" MinWidth="270" Margin="15"/>
                     </Grid>
@@ -853,7 +864,7 @@ Add-Type -AssemblyName PresentationFramework, PresentationCore, WindowsBase
 
                 <Border x:Name="HistoryView" Visibility="Collapsed" Background="{StaticResource Panel}" BorderBrush="{StaticResource Line}" BorderThickness="1" CornerRadius="12" ClipToBounds="True">
                     <Grid><Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/></Grid.RowDefinitions>
-                        <StackPanel Margin="17,14,17,11"><TextBlock Text="Lokaler 7-Tage-Verlauf" FontSize="18" FontWeight="SemiBold"/><TextBlock Text="Es wird nur bei Aenderungen oder spaetestens alle 15 Minuten gespeichert" Foreground="#8399A6" FontSize="12" Margin="0,3,0,0"/></StackPanel>
+                        <StackPanel Margin="17,14,17,11"><TextBlock x:Name="HistoryPanelTitle" Text="Lokaler 7-Tage-Verlauf" FontSize="18" FontWeight="SemiBold"/><TextBlock x:Name="HistoryPanelHint" Text="Es wird nur bei Aenderungen oder spaetestens alle 15 Minuten gespeichert" Foreground="#8399A6" FontSize="12" Margin="0,3,0,0"/></StackPanel>
                         <DataGrid x:Name="HistoryGrid" Grid.Row="1" AlternationCount="2"><DataGrid.Columns><DataGridTextColumn Header="ZEIT" Binding="{Binding Time}" Width="135"/><DataGridTextColumn Header="APPS" Binding="{Binding Apps}" Width="60"/><DataGridTextColumn Header="VERBINDUNGEN" Binding="{Binding Connections}" Width="105"/><DataGridTextColumn Header="NEU" Binding="{Binding New}" Width="55"/><DataGridTextColumn Header="BEFUNDE" Binding="{Binding Findings}" Width="70"/><DataGridTextColumn Header="ZUSAMMENFASSUNG" Binding="{Binding Summary}" Width="2.5*"/></DataGrid.Columns></DataGrid>
                     </Grid>
                 </Border>
@@ -861,7 +872,7 @@ Add-Type -AssemblyName PresentationFramework, PresentationCore, WindowsBase
                 <Border x:Name="AccessView" Visibility="Collapsed" Background="{StaticResource Panel}" BorderBrush="{StaticResource Line}" BorderThickness="1" CornerRadius="12" ClipToBounds="True">
                     <Grid><Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
                         <Grid Margin="17,14,17,11"><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
-                            <StackPanel><TextBlock Text="Manueller Datei- und Ordnerzugriffs-Scan" FontSize="18" FontWeight="SemiBold"/><TextBlock Text="Fuenf Sekunden, lokale Windows-Ereignisse, keine Dateiinhalte und keine einzelnen Dateinamen" Foreground="#8399A6" FontSize="12" Margin="0,3,0,0"/></StackPanel>
+                            <StackPanel><TextBlock x:Name="AccessPanelTitle" Text="Manueller Datei- und Ordnerzugriffs-Scan" FontSize="18" FontWeight="SemiBold"/><TextBlock x:Name="AccessPanelHint" Text="Fuenf Sekunden, lokale Windows-Ereignisse, keine Dateiinhalte und keine einzelnen Dateinamen" Foreground="#8399A6" FontSize="12" Margin="0,3,0,0"/></StackPanel>
                             <Button x:Name="AccessScanButton" Grid.Column="1" Content="5-Sekunden-Scan starten" MinWidth="210" Margin="15,0,0,0"/>
                         </Grid>
                         <DataGrid x:Name="AccessGrid" Grid.Row="1" AlternationCount="2"><DataGrid.Columns><DataGridTextColumn Header="APP" Binding="{Binding ProcessName}" Width="1.15*"/><DataGridTextColumn Header="PID" Binding="{Binding ProcessId}" Width="70"/><DataGridTextColumn Header="ORDNER" Binding="{Binding Folder}" Width="1.1*"/><DataGridTextColumn Header="AKTION" Binding="{Binding Operation}" Width="130"/><DataGridTextColumn Header="ZUGRIFFE" Binding="{Binding AccessCount}" Width="85"/><DataGridTextColumn Header="PROGRAMMPFAD" Binding="{Binding ExecutablePath}" Width="2.2*"/></DataGrid.Columns></DataGrid>
@@ -871,14 +882,14 @@ Add-Type -AssemblyName PresentationFramework, PresentationCore, WindowsBase
 
                 <Border x:Name="ChangesView" Visibility="Collapsed" Background="{StaticResource Panel}" BorderBrush="{StaticResource Line}" BorderThickness="1" CornerRadius="12" ClipToBounds="True">
                     <Grid><Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
-                        <StackPanel Margin="17,14,17,11"><TextBlock Text="Change Vault" FontSize="18" FontWeight="SemiBold"/><TextBlock Text="Jede genehmigte Systemaenderung mit sicherer Ruecknahme" Foreground="#8399A6" FontSize="12" Margin="0,3,0,0"/></StackPanel>
+                        <StackPanel Margin="17,14,17,11"><TextBlock x:Name="ChangesPanelTitle" Text="Change Vault" FontSize="18" FontWeight="SemiBold"/><TextBlock x:Name="ChangesPanelHint" Text="Jede genehmigte Systemaenderung mit sicherer Ruecknahme" Foreground="#8399A6" FontSize="12" Margin="0,3,0,0"/></StackPanel>
                         <DataGrid x:Name="ChangeGrid" Grid.Row="1" AlternationCount="2"><DataGrid.Columns><DataGridTextColumn Header="ZEIT" Binding="{Binding Time}" Width="135"/><DataGridTextColumn Header="AKTION" Binding="{Binding DisplayAction}" Width="1.25*"/><DataGridTextColumn Header="ZIEL" Binding="{Binding TargetName}" Width="1.55*"/><DataGridTextColumn Header="STATUS" Binding="{Binding StatusDisplay}" Width="115"/></DataGrid.Columns></DataGrid>
                         <Button x:Name="UndoChangeButton" Grid.Row="2" Content="Ausgewaehlte Aenderung rueckgaengig" HorizontalAlignment="Right" MinWidth="280" Margin="15"/>
                     </Grid>
                 </Border>
             </Grid>
 
-            <Grid Grid.Row="2" Margin="0,13,0,0"><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions><TextBlock x:Name="StatusText" Text="Bereit" Foreground="#8DA1AD"/><TextBlock Grid.Column="1" Text="TrackerRadar 0.5 Alpha | SC LABS" Foreground="#627985"/></Grid>
+            <Grid Grid.Row="2" Margin="0,13,0,0"><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions><TextBlock x:Name="StatusText" Text="Bereit" Foreground="#8DA1AD"/><TextBlock Grid.Column="1" Text="TrackerRadar 0.5.1 Alpha | SC LABS" Foreground="#627985"/></Grid>
         </Grid>
     </Grid>
 </Window>
@@ -925,7 +936,27 @@ $findingsView = $window.FindName('FindingsView')
 $historyView = $window.FindName('HistoryView')
 $accessView = $window.FindName('AccessView')
 $changesView = $window.FindName('ChangesView')
-
+$languageSelector = $window.FindName('LanguageSelector')
+$taglineText = $window.FindName('TaglineText')
+$privacyTitleText = $window.FindName('PrivacyTitleText')
+$privacyBodyText = $window.FindName('PrivacyBodyText')
+$overviewAppsLabel = $window.FindName('OverviewAppsLabel')
+$overviewNewLabel = $window.FindName('OverviewNewLabel')
+$overviewFindingsLabel = $window.FindName('OverviewFindingsLabel')
+$currentActivitiesTitle = $window.FindName('CurrentActivitiesTitle')
+$currentActivitiesHint = $window.FindName('CurrentActivitiesHint')
+$importantFindingsTitle = $window.FindName('ImportantFindingsTitle')
+$importantFindingsHint = $window.FindName('ImportantFindingsHint')
+$activitiesPanelTitle = $window.FindName('ActivitiesPanelTitle')
+$activitiesPanelHint = $window.FindName('ActivitiesPanelHint')
+$findingsPanelTitle = $window.FindName('FindingsPanelTitle')
+$findingsPanelHint = $window.FindName('FindingsPanelHint')
+$historyPanelTitle = $window.FindName('HistoryPanelTitle')
+$historyPanelHint = $window.FindName('HistoryPanelHint')
+$accessPanelTitle = $window.FindName('AccessPanelTitle')
+$accessPanelHint = $window.FindName('AccessPanelHint')
+$changesPanelTitle = $window.FindName('ChangesPanelTitle')
+$changesPanelHint = $window.FindName('ChangesPanelHint')
 function Set-UiImage {
     param([Parameter(Mandatory)]$Control, [Parameter(Mandatory)][string]$Path)
     if (-not (Test-Path -LiteralPath $Path)) { return $null }
@@ -939,6 +970,84 @@ function Set-UiImage {
     return $bitmap
 }
 
+function Set-GridHeaders {
+    param($Grid,[string[]]$Keys)
+    for ($index=0; $index -lt $Keys.Count -and $index -lt $Grid.Columns.Count; $index++) {
+        $Grid.Columns[$index].Header = Get-Text $Keys[$index]
+    }
+}
+
+function Apply-Language {
+    $window.Title = "TrackerRadar $script:Version | SC LABS"
+    $taglineText.Text = Get-Text 'Tagline'
+    $navOverview.Content = Get-Text 'NavOverview'
+    $navActivities.Content = Get-Text 'NavActivities'
+    $navFindings.Content = Get-Text 'NavFindings'
+    $navHistory.Content = Get-Text 'NavHistory'
+    $navAccess.Content = Get-Text 'NavAccess'
+    $navChanges.Content = Get-Text 'NavChanges'
+    $privacyTitleText.Text = Get-Text 'PrivacyTitle'
+    $privacyBodyText.Text = Get-Text 'PrivacyBody'
+    $scanButton.Content = Get-Text 'ScanNow'
+    $overviewAppsLabel.Text = Get-Text 'OverviewApps'
+    $overviewNewLabel.Text = Get-Text 'OverviewNew'
+    $overviewFindingsLabel.Text = Get-Text 'OverviewFindings'
+    $currentActivitiesTitle.Text = Get-Text 'CurrentActivities'
+    $currentActivitiesHint.Text = Get-Text 'CurrentActivitiesHint'
+    $importantFindingsTitle.Text = Get-Text 'ImportantFindings'
+    $importantFindingsHint.Text = Get-Text 'ImportantFindingsHint'
+    $reportButton.Content = Get-Text 'OpenLocalReport'
+    $activitiesPanelTitle.Text = Get-Text 'ActivitiesPanelTitle'
+    $activitiesPanelHint.Text = Get-Text 'ActivitiesPanelHint'
+    $blockInternetButton.Content = Get-Text 'BlockInternet'
+    $findingsPanelTitle.Text = Get-Text 'FindingsPanelTitle'
+    $findingsPanelHint.Text = Get-Text 'FindingsPanelHint'
+    $disableStartupButton.Content = Get-Text 'DisableStartup'
+    $historyPanelTitle.Text = Get-Text 'HistoryPanelTitle'
+    $historyPanelHint.Text = Get-Text 'HistoryPanelHint'
+    $accessPanelTitle.Text = Get-Text 'AccessPanelTitle'
+    $accessPanelHint.Text = Get-Text 'AccessPanelHint'
+    $accessScanButton.Content = Get-Text 'AccessStart'
+    $changesPanelTitle.Text = Get-Text 'ChangesPanelTitle'
+    $changesPanelHint.Text = Get-Text 'ChangesPanelHint'
+    $undoChangeButton.Content = Get-Text 'UndoChange'
+    Set-GridHeaders $overviewActivityGrid @('HeaderApp','HeaderTarget','HeaderStatus')
+    Set-GridHeaders $activityGrid @('HeaderApp','HeaderTarget','HeaderProvider','HeaderIP','HeaderPort','HeaderStatus','HeaderFirstSeen')
+    Set-GridHeaders $findingsGrid @('HeaderLevel','HeaderApp','HeaderReason','HeaderPoints')
+    Set-GridHeaders $historyGrid @('HeaderTime','HeaderApps','HeaderConnections','HeaderNew','HeaderFindings','HeaderSummary')
+    Set-GridHeaders $accessGrid @('HeaderApp','HeaderPID','HeaderFolder','HeaderOperation','HeaderAccesses','HeaderProgramPath')
+    Set-GridHeaders $changeGrid @('HeaderTime','HeaderAction','HeaderTarget','HeaderStatus')
+    if ($null -eq $script:LastSnapshot) { $statusText.Text = Get-Text 'Ready' }
+}
+
+function Refresh-LocalizedRows {
+    if ($script:LastSnapshot) {
+        $activities = @(Convert-ActivityRows @($script:LastSnapshot.Activities))
+        $findings = @(Convert-FindingRows @($script:LastSnapshot.Findings))
+        $history = @(Convert-HistoryRows @($script:LastSnapshot.History))
+        $overviewActivityGrid.ItemsSource = @($activities | Select-Object -First 15)
+        $overviewFindingsList.ItemsSource = @($findings | Select-Object -First 8)
+        $activityGrid.ItemsSource = $activities
+        $findingsGrid.ItemsSource = $findings
+        $historyGrid.ItemsSource = $history
+        $criticalHint.Text = Format-Text 'CriticalFormat' @($script:LastSnapshot.CriticalCount)
+        if (-not $script:LastSnapshot.BaselineExists) {
+            $statusText.Text = Format-Text 'StatusBaseline' @($script:LastSnapshot.ExternalConnections,$script:LastSnapshot.DurationMs)
+        } else {
+            $statusText.Text = Format-Text 'StatusLastCheck' @((Get-Date -Format 'HH:mm:ss'),$script:LastSnapshot.ExternalConnections,$script:LastSnapshot.NewCount,$script:LastSnapshot.DurationMs)
+        }
+    }
+    $changeGrid.ItemsSource = @(Get-ChangeVaultRows)
+    Update-AccessView
+}
+
+function Set-Language {
+    param([ValidateSet('de','en')][string]$Language,[bool]$Save=$true)
+    Set-TrackerRadarLanguage -Language $Language -Save $Save
+    Apply-Language
+    Refresh-LocalizedRows
+    Set-View $script:CurrentView
+}
 function Get-AccessScanResult {
     return (Read-JsonFile (Join-Path $script:AccessScanData 'latest-access-scan.json'))
 }
@@ -947,14 +1056,14 @@ function Update-AccessView {
     $result = Get-AccessScanResult
     if (-not $result) {
         $accessGrid.ItemsSource = @()
-        $accessSummary.Text = 'Noch kein Kurzscan vorhanden. Der Scan laeuft nur nach ausdruecklichem Start.'
+        $accessSummary.Text = Get-Text 'AccessNone'
         return
     }
-    $accessGrid.ItemsSource = @($result.Groups)
+    $accessGrid.ItemsSource = @(Convert-AccessRows @($result.Groups))
     $time = [string]$result.Timestamp
     try { $time = ([datetime]$result.Timestamp).ToString('dd.MM.yyyy HH:mm:ss') } catch { }
-    $folders = @($result.MonitoredFolders) -join ', '
-    $accessSummary.Text = "Letzter Kurzscan: $time | $($result.DurationSeconds) Sekunden | $($result.GroupCount) Gruppe(n) | Ordner: $folders | Rohdaten automatisch geloescht"
+    $folders = @($result.MonitoredFolders | ForEach-Object { Convert-DisplayText ([string]$_) }) -join ', '
+    $accessSummary.Text = Format-Text 'AccessSummary' @($time,$result.DurationSeconds,$result.GroupCount,$folders)
 }
 
 function Start-AccessScan {
@@ -965,8 +1074,8 @@ function Start-AccessScan {
     if (Test-Path -LiteralPath $resultPath) { $previousWrite = (Get-Item -LiteralPath $resultPath).LastWriteTimeUtc }
 
     $accessScanButton.IsEnabled = $false
-    $accessScanButton.Content = 'Scan laeuft ...'
-    $statusText.Text = 'Dateizugriffs-Kurzscan wird vorbereitet ...'
+    $accessScanButton.Content = Get-Text 'AccessRunning'
+    $statusText.Text = Get-Text 'AccessPreparing'
     $window.Cursor = [System.Windows.Input.Cursors]::Wait
     $window.Dispatcher.Invoke([action]{}, 'Background')
     try {
@@ -987,10 +1096,10 @@ function Start-AccessScan {
         if ($newWrite -le $previousWrite) { throw 'Der Scan wurde nicht aktualisiert.' }
         Update-AccessView
         $result = Get-AccessScanResult
-        $statusText.Text = "Dateizugriffs-Scan abgeschlossen: $($result.GroupCount) Gruppe(n), Rohdaten geloescht."
+        $statusText.Text = Format-Text 'AccessDone' @($result.GroupCount)
     } finally {
         $window.Cursor = [System.Windows.Input.Cursors]::Arrow
-        $accessScanButton.Content = '5-Sekunden-Scan starten'
+        $accessScanButton.Content = Get-Text 'AccessStart'
         $accessScanButton.IsEnabled = $true
     }
 }
@@ -1006,11 +1115,11 @@ function Get-ChangeVaultRows {
             $time = [string]$record.Timestamp
             try { $time = ([datetime]$record.Timestamp).ToString('dd.MM.yyyy HH:mm') } catch { }
             $status = switch ([string]$record.Status) {
-                'Applied' { 'Aktiv' }
-                'Undone' { 'Rueckgaengig' }
-                'Pending' { 'Ausstehend' }
-                'Failed' { 'Fehlgeschlagen' }
-                default { [string]$record.Status }
+                'Applied' { Get-Text 'ChangeStatusApplied' }
+                'Undone' { Get-Text 'ChangeStatusUndone' }
+                'Pending' { Get-Text 'ChangeStatusPending' }
+                'Failed' { Get-Text 'ChangeStatusFailed' }
+                default { Convert-DisplayText ([string]$record.Status) }
             }
             $requiresAdmin = $false
             if ($record.PSObject.Properties.Name -contains 'RequiresAdmin') { $requiresAdmin = [bool]$record.RequiresAdmin }
@@ -1018,7 +1127,7 @@ function Get-ChangeVaultRows {
                 Id = [string]$record.Id
                 Timestamp = [string]$record.Timestamp
                 Time = $time
-                DisplayAction = [string]$record.DisplayAction
+                DisplayAction = Convert-DisplayText ([string]$record.DisplayAction)
                 TargetName = [string]$record.TargetName
                 Target = [string]$record.Target
                 Status = [string]$record.Status
@@ -1089,6 +1198,7 @@ if ($trackerRadarBitmap) { $window.Icon = $trackerRadarBitmap }
 
 function Set-View {
     param([string]$Name)
+    $script:CurrentView = $Name
     foreach ($view in @($overviewView,$activitiesView,$findingsView,$historyView,$accessView,$changesView)) { $view.Visibility = 'Collapsed' }
     foreach ($button in @($navOverview,$navActivities,$navFindings,$navHistory,$navAccess,$navChanges)) {
         $button.Background = [System.Windows.Media.Brushes]::Transparent
@@ -1097,53 +1207,47 @@ function Set-View {
     }
 
     switch ($Name) {
-        'Activities' { $activitiesView.Visibility='Visible'; $navActivities.Background='#102630'; $navActivities.Foreground='#25D7C0'; $navActivities.FontWeight='SemiBold'; $viewTitle.Text='Aktivitaeten'; $viewSubtitle.Text='Alle aktuellen Ziele mit Anbieter, IP und erstem Erkennungszeitpunkt.' }
-        'Findings' { $findingsView.Visibility='Visible'; $navFindings.Background='#102630'; $navFindings.Foreground='#25D7C0'; $navFindings.FontWeight='SemiBold'; $viewTitle.Text='Befunde'; $viewSubtitle.Text='Nur neue, veraenderte oder technisch auffaellige Aktivitaeten.' }
-        'History' { $historyView.Visibility='Visible'; $navHistory.Background='#102630'; $navHistory.Foreground='#25D7C0'; $navHistory.FontWeight='SemiBold'; $viewTitle.Text='Verlauf'; $viewSubtitle.Text='Lokal gespeicherte Aenderungen der letzten sieben Tage.' }
-        'Access' { $accessView.Visibility='Visible'; $navAccess.Background='#102630'; $navAccess.Foreground='#25D7C0'; $navAccess.FontWeight='SemiBold'; $viewTitle.Text='Dateizugriffe'; $viewSubtitle.Text='Manueller lokaler Kurzscan fuer Dokumente, Desktop, Downloads, OneDrive und Browserprofile.'; Update-AccessView }
-        'Changes' { $changesView.Visibility='Visible'; $navChanges.Background='#102630'; $navChanges.Foreground='#25D7C0'; $navChanges.FontWeight='SemiBold'; $viewTitle.Text='Aenderungen'; $viewSubtitle.Text='Genehmigte Eingriffe mit vollstaendiger Ruecknahme.' }
-        default { $overviewView.Visibility='Visible'; $navOverview.Background='#102630'; $navOverview.Foreground='#25D7C0'; $navOverview.FontWeight='SemiBold'; $viewTitle.Text='Uebersicht'; $viewSubtitle.Text='Neue Aktivitaeten und wichtige Aenderungen auf einen Blick.' }
+        'Activities' { $activitiesView.Visibility='Visible'; $navActivities.Background='#102630'; $navActivities.Foreground='#25D7C0'; $navActivities.FontWeight='SemiBold'; $viewTitle.Text=Get-Text 'ViewActivitiesTitle'; $viewSubtitle.Text=Get-Text 'ViewActivitiesSubtitle' }
+        'Findings' { $findingsView.Visibility='Visible'; $navFindings.Background='#102630'; $navFindings.Foreground='#25D7C0'; $navFindings.FontWeight='SemiBold'; $viewTitle.Text=Get-Text 'ViewFindingsTitle'; $viewSubtitle.Text=Get-Text 'ViewFindingsSubtitle' }
+        'History' { $historyView.Visibility='Visible'; $navHistory.Background='#102630'; $navHistory.Foreground='#25D7C0'; $navHistory.FontWeight='SemiBold'; $viewTitle.Text=Get-Text 'ViewHistoryTitle'; $viewSubtitle.Text=Get-Text 'ViewHistorySubtitle' }
+        'Access' { $accessView.Visibility='Visible'; $navAccess.Background='#102630'; $navAccess.Foreground='#25D7C0'; $navAccess.FontWeight='SemiBold'; $viewTitle.Text=Get-Text 'ViewAccessTitle'; $viewSubtitle.Text=Get-Text 'ViewAccessSubtitle'; Update-AccessView }
+        'Changes' { $changesView.Visibility='Visible'; $navChanges.Background='#102630'; $navChanges.Foreground='#25D7C0'; $navChanges.FontWeight='SemiBold'; $viewTitle.Text=Get-Text 'ViewChangesTitle'; $viewSubtitle.Text=Get-Text 'ViewChangesSubtitle' }
+        default { $script:CurrentView='Overview'; $overviewView.Visibility='Visible'; $navOverview.Background='#102630'; $navOverview.Foreground='#25D7C0'; $navOverview.FontWeight='SemiBold'; $viewTitle.Text=Get-Text 'ViewOverviewTitle'; $viewSubtitle.Text=Get-Text 'ViewOverviewSubtitle' }
     }
 }
 
 function Update-Ui {
     try {
         $scanButton.IsEnabled = $false
-        $scanButton.Content = 'Pruefe ...'
-        $statusText.Text = 'Lokale Auswertung laeuft ...'
+        $scanButton.Content = Get-Text 'Scanning'
+        $statusText.Text = Get-Text 'StatusLocalScan'
         $window.Cursor = [System.Windows.Input.Cursors]::Wait
         $window.Dispatcher.Invoke([action]{}, 'Background')
 
         $snapshot = Get-Snapshot
-        $overviewActivityGrid.ItemsSource = @($snapshot.Activities | Select-Object -First 15)
-        $overviewFindingsList.ItemsSource = @($snapshot.Findings | Select-Object -First 8)
-        $activityGrid.ItemsSource = @($snapshot.Activities)
-        $findingsGrid.ItemsSource = @($snapshot.Findings)
-        $historyGrid.ItemsSource = @($snapshot.History)
-        $changeGrid.ItemsSource = @(Get-ChangeVaultRows)
-        Update-AccessView
+        $script:LastSnapshot = $snapshot
         $appsCount.Text = [string]$snapshot.ActiveApps
         $newCount.Text = [string]$snapshot.NewCount
         $findingsCount.Text = [string]$snapshot.FindingCount
-        $criticalHint.Text = "$($snapshot.CriticalCount) kritisch"
-
-        if (-not $snapshot.BaselineExists) {
-            $statusText.Text = "Baseline erstellt | $($snapshot.ExternalConnections) Verbindung(en) | $($snapshot.DurationMs) ms"
-        } else {
-            $statusText.Text = "Letzte Pruefung: $(Get-Date -Format 'HH:mm:ss') | $($snapshot.ExternalConnections) Verbindung(en) | $($snapshot.NewCount) neu | $($snapshot.DurationMs) ms"
-        }
+        Refresh-LocalizedRows
         $snapshot = $null
     } catch {
-        $statusText.Text = "Pruefung fehlgeschlagen: $($_.Exception.Message)"
-        [System.Windows.MessageBox]::Show($_.Exception.Message, 'TrackerRadar', 'OK', 'Error') | Out-Null
+        $message = Convert-DisplayText ([string]$_.Exception.Message)
+        $statusText.Text = Format-Text 'StatusScanFailed' @($message)
+        [System.Windows.MessageBox]::Show($message, 'TrackerRadar', 'OK', 'Error') | Out-Null
     } finally {
         $window.Cursor = [System.Windows.Input.Cursors]::Arrow
-        $scanButton.Content = 'Jetzt pruefen'
+        $scanButton.Content = Get-Text 'ScanNow'
         $scanButton.IsEnabled = $true
         [GC]::Collect(0, [GCCollectionMode]::Optimized)
     }
 }
 
+$languageSelector.Add_SelectionChanged({
+    if ($script:LanguageChanging) { return }
+    $selected = $languageSelector.SelectedItem
+    if ($selected -and [string]$selected.Tag -in @('de','en')) { Set-Language -Language ([string]$selected.Tag) -Save $true }
+})
 $navOverview.Add_Click({ Set-View 'Overview' })
 $navActivities.Add_Click({ Set-View 'Activities' })
 $navFindings.Add_Click({ Set-View 'Findings' })
@@ -1152,87 +1256,104 @@ $navAccess.Add_Click({ Set-View 'Access' })
 $navChanges.Add_Click({ Set-View 'Changes' })
 $scanButton.Add_Click({ Update-Ui })
 $accessScanButton.Add_Click({
-    try { Start-AccessScan } catch { [System.Windows.MessageBox]::Show($_.Exception.Message, 'Dateizugriffs-Scan', 'OK', 'Error') | Out-Null }
+    try { Start-AccessScan } catch { [System.Windows.MessageBox]::Show((Convert-DisplayText ([string]$_.Exception.Message)), (Get-Text 'AccessDialogTitle'), 'OK', 'Error') | Out-Null }
 })
 $reportButton.Add_Click({ $report = Join-Path $script:Data 'latest-scan.json'; if (Test-Path -LiteralPath $report) { Start-Process explorer.exe -ArgumentList @('/select,', $report) } })
 
 $blockInternetButton.Add_Click({
     $item = $activityGrid.SelectedItem
-    if (-not $item) { [System.Windows.MessageBox]::Show('Bitte zuerst eine Anwendung auswaehlen.', 'TrackerRadar', 'OK', 'Information') | Out-Null; return }
-    if ([string]::IsNullOrWhiteSpace([string]$item.Path) -or -not (Test-Path -LiteralPath ([string]$item.Path) -PathType Leaf)) { [System.Windows.MessageBox]::Show('Der Programmpfad konnte nicht bestaetigt werden. Die App wird nicht blockiert.', 'TrackerRadar', 'OK', 'Warning') | Out-Null; return }
-    $message = "Internetzugriff fuer $($item.App) blockieren?`n`nPfad: $($item.Path)`n`nTrackerRadar erstellt eine ausgehende Windows-Firewall-Regel. Windows fragt einmal nach Administratorrechten. Die Aenderung wird im Change Vault gespeichert und kann rueckgaengig gemacht werden."
-    if ([System.Windows.MessageBox]::Show($message, 'Internetzugriff blockieren', 'YesNo', 'Warning') -ne 'Yes') { return }
+    if (-not $item) { [System.Windows.MessageBox]::Show((Get-Text 'SelectApp'), 'TrackerRadar', 'OK', 'Information') | Out-Null; return }
+    if ([string]::IsNullOrWhiteSpace([string]$item.Path) -or -not (Test-Path -LiteralPath ([string]$item.Path) -PathType Leaf)) { [System.Windows.MessageBox]::Show((Get-Text 'InvalidProgramPath'), 'TrackerRadar', 'OK', 'Warning') | Out-Null; return }
+    $message = Format-Text 'BlockPrompt' @($item.App,$item.Path)
+    if ([System.Windows.MessageBox]::Show($message, (Get-Text 'BlockTitle'), 'YesNo', 'Warning') -ne 'Yes') { return }
     try {
         $response = Invoke-ControlRequest -Request ([pscustomobject]@{ Action='BlockInternet'; ProgramPath=[string]$item.Path }) -RequireAdmin $true
         if (-not [bool]$response.Ok) { throw [string]$response.Error }
-        [System.Windows.MessageBox]::Show([string]$response.Message, 'TrackerRadar', 'OK', 'Information') | Out-Null
+        [System.Windows.MessageBox]::Show((Convert-DisplayText ([string]$response.Message)), 'TrackerRadar', 'OK', 'Information') | Out-Null
         Update-Ui
         Set-View 'Changes'
-    } catch { [System.Windows.MessageBox]::Show($_.Exception.Message, 'Aenderung nicht ausgefuehrt', 'OK', 'Error') | Out-Null }
+    } catch { [System.Windows.MessageBox]::Show((Convert-DisplayText ([string]$_.Exception.Message)), (Get-Text 'ChangeNotExecuted'), 'OK', 'Error') | Out-Null }
 })
 
 $disableStartupButton.Add_Click({
     $item = $findingsGrid.SelectedItem
-    if (-not $item) { [System.Windows.MessageBox]::Show('Bitte zuerst einen Autostart-Befund auswaehlen.', 'TrackerRadar', 'OK', 'Information') | Out-Null; return }
-    if (-not ($item.PSObject.Properties.Name -contains 'ActionType') -or [string]$item.ActionType -ne 'DisableStartup') { [System.Windows.MessageBox]::Show('Dieser Befund ist kein deaktivierbarer Autostart.', 'TrackerRadar', 'OK', 'Information') | Out-Null; return }
+    if (-not $item) { [System.Windows.MessageBox]::Show((Get-Text 'SelectStartup'), 'TrackerRadar', 'OK', 'Information') | Out-Null; return }
+    if (-not ($item.PSObject.Properties.Name -contains 'ActionType') -or [string]$item.ActionType -ne 'DisableStartup') { [System.Windows.MessageBox]::Show((Get-Text 'StartupNotDisableable'), 'TrackerRadar', 'OK', 'Information') | Out-Null; return }
     $location = [string]$item.StartupLocation
     $requiresAdmin = $location.StartsWith('HKLM:',[StringComparison]::OrdinalIgnoreCase) -or $location.StartsWith($env:ProgramData,[StringComparison]::OrdinalIgnoreCase)
-    $message = "Autostart $($item.StartupName) deaktivieren?`n`nSpeicherort: $location`nBefehl: $($item.StartupCommand)`n`nDer Originalwert wird im Change Vault gesichert und kann vollstaendig wiederhergestellt werden."
-    if ([System.Windows.MessageBox]::Show($message, 'Autostart deaktivieren', 'YesNo', 'Warning') -ne 'Yes') { return }
+    $message = Format-Text 'DisableStartupPrompt' @($item.StartupName,$location,$item.StartupCommand)
+    if ([System.Windows.MessageBox]::Show($message, (Get-Text 'DisableStartupTitle'), 'YesNo', 'Warning') -ne 'Yes') { return }
     try {
         $request = [pscustomobject]@{ Action='DisableStartup'; Name=[string]$item.StartupName; Location=$location; Command=[string]$item.StartupCommand }
         $response = Invoke-ControlRequest -Request $request -RequireAdmin $requiresAdmin
         if (-not [bool]$response.Ok) { throw [string]$response.Error }
-        [System.Windows.MessageBox]::Show([string]$response.Message, 'TrackerRadar', 'OK', 'Information') | Out-Null
+        [System.Windows.MessageBox]::Show((Convert-DisplayText ([string]$response.Message)), 'TrackerRadar', 'OK', 'Information') | Out-Null
         Update-Ui
         Set-View 'Changes'
-    } catch { [System.Windows.MessageBox]::Show($_.Exception.Message, 'Aenderung nicht ausgefuehrt', 'OK', 'Error') | Out-Null }
+    } catch { [System.Windows.MessageBox]::Show((Convert-DisplayText ([string]$_.Exception.Message)), (Get-Text 'ChangeNotExecuted'), 'OK', 'Error') | Out-Null }
 })
 
 $undoChangeButton.Add_Click({
     $item = $changeGrid.SelectedItem
-    if (-not $item) { [System.Windows.MessageBox]::Show('Bitte zuerst eine Aenderung auswaehlen.', 'TrackerRadar', 'OK', 'Information') | Out-Null; return }
-    if ([string]$item.Status -eq 'Undone') { [System.Windows.MessageBox]::Show('Diese Aenderung wurde bereits rueckgaengig gemacht.', 'TrackerRadar', 'OK', 'Information') | Out-Null; return }
-    $message = "$($item.DisplayAction) fuer $($item.TargetName) rueckgaengig machen?"
-    if ([System.Windows.MessageBox]::Show($message, 'Aenderung rueckgaengig machen', 'YesNo', 'Question') -ne 'Yes') { return }
+    if (-not $item) { [System.Windows.MessageBox]::Show((Get-Text 'SelectChange'), 'TrackerRadar', 'OK', 'Information') | Out-Null; return }
+    if ([string]$item.Status -eq 'Undone') { [System.Windows.MessageBox]::Show((Get-Text 'AlreadyUndone'), 'TrackerRadar', 'OK', 'Information') | Out-Null; return }
+    $message = Format-Text 'UndoPrompt' @($item.DisplayAction,$item.TargetName)
+    if ([System.Windows.MessageBox]::Show($message, (Get-Text 'UndoTitle'), 'YesNo', 'Question') -ne 'Yes') { return }
     try {
         $response = Invoke-ControlRequest -Request ([pscustomobject]@{ Action='UndoChange'; ChangeId=[string]$item.Id }) -RequireAdmin ([bool]$item.RequiresAdmin)
         if (-not [bool]$response.Ok) { throw [string]$response.Error }
-        [System.Windows.MessageBox]::Show([string]$response.Message, 'TrackerRadar', 'OK', 'Information') | Out-Null
+        [System.Windows.MessageBox]::Show((Convert-DisplayText ([string]$response.Message)), 'TrackerRadar', 'OK', 'Information') | Out-Null
         Update-Ui
         Set-View 'Changes'
-    } catch { [System.Windows.MessageBox]::Show($_.Exception.Message, 'Ruecknahme fehlgeschlagen', 'OK', 'Error') | Out-Null }
+    } catch { [System.Windows.MessageBox]::Show((Convert-DisplayText ([string]$_.Exception.Message)), (Get-Text 'UndoFailed'), 'OK', 'Error') | Out-Null }
 })
 
 $changeGrid.Add_MouseDoubleClick({
     $item = $changeGrid.SelectedItem
-    if ($item) { [System.Windows.MessageBox]::Show("ID: $($item.Id)`nAktion: $($item.DisplayAction)`nZiel: $($item.Target)`nStatus: $($item.StatusDisplay)", 'Change Vault', 'OK', 'Information') | Out-Null }
+    if ($item) { [System.Windows.MessageBox]::Show((Format-Text 'ChangeVaultDetails' @($item.Id,$item.DisplayAction,$item.Target,$item.StatusDisplay)), 'Change Vault', 'OK', 'Information') | Out-Null }
 })
 $showActivity = {
     param($grid)
     $item = $grid.SelectedItem
     if ($item) {
-        $text = "App: $($item.App)`nZiel: $($item.Target)`nAnbieter: $($item.Provider)`nZweck: $($item.Purpose)`nIP: $($item.Address):$($item.Port)`nPID: $($item.Pid)`nStatus: $($item.Change)`nErstmals erkannt: $($item.FirstSeenDisplay)`nPfad: $($item.Path)`n`n$($item.Reason)"
-        [System.Windows.MessageBox]::Show($text, 'Aktivitaetsdetails', 'OK', 'Information') | Out-Null
+        $text = Format-Text 'ActivityDetails' @($item.App,$item.Target,$item.Provider,$item.Purpose,$item.Address,$item.Port,$item.Pid,$item.Change,$item.FirstSeenDisplay,$item.Path,$item.Reason)
+        [System.Windows.MessageBox]::Show($text, (Get-Text 'ActivityDetailsTitle'), 'OK', 'Information') | Out-Null
     }
 }
 $overviewActivityGrid.Add_MouseDoubleClick({ & $showActivity $overviewActivityGrid })
 $activityGrid.Add_MouseDoubleClick({ & $showActivity $activityGrid })
-$findingsGrid.Add_MouseDoubleClick({ $item=$findingsGrid.SelectedItem; if ($item) { [System.Windows.MessageBox]::Show("$($item.Summary)`n`n$($item.Detail)", 'Befunddetails', 'OK', 'Warning') | Out-Null } })
-$overviewFindingsList.Add_MouseDoubleClick({ $item=$overviewFindingsList.SelectedItem; if ($item) { [System.Windows.MessageBox]::Show("$($item.Summary)`n`n$($item.Detail)", 'Befunddetails', 'OK', 'Warning') | Out-Null } })
-$historyGrid.Add_MouseDoubleClick({ $item=$historyGrid.SelectedItem; if ($item) { $changes=if ([string]::IsNullOrWhiteSpace([string]$item.Changes)) {'Keine Einzelveraenderungen gespeichert.'} else {$item.Changes}; [System.Windows.MessageBox]::Show("$($item.Time)`n$($item.Summary)`n`n$changes", 'Verlaufsdetails', 'OK', 'Information') | Out-Null } })
-$accessGrid.Add_MouseDoubleClick({ $item=$accessGrid.SelectedItem; if ($item) { [System.Windows.MessageBox]::Show("App: $($item.ProcessName)`nPID: $($item.ProcessId)`nOrdner: $($item.Folder)`nAktion: $($item.Operation)`nZugriffe: $($item.AccessCount)`nProgrammpfad: $($item.ExecutablePath)`n`nKeine Dateiinhalte oder einzelnen Dateinamen wurden gespeichert.", 'Dateizugriffsdetails', 'OK', 'Information') | Out-Null } })
+$findingsGrid.Add_MouseDoubleClick({ $item=$findingsGrid.SelectedItem; if ($item) { [System.Windows.MessageBox]::Show("$($item.Summary)`n`n$($item.Detail)", (Get-Text 'FindingDetailsTitle'), 'OK', 'Warning') | Out-Null } })
+$overviewFindingsList.Add_MouseDoubleClick({ $item=$overviewFindingsList.SelectedItem; if ($item) { [System.Windows.MessageBox]::Show("$($item.Summary)`n`n$($item.Detail)", (Get-Text 'FindingDetailsTitle'), 'OK', 'Warning') | Out-Null } })
+$historyGrid.Add_MouseDoubleClick({ $item=$historyGrid.SelectedItem; if ($item) { $changes=if ([string]::IsNullOrWhiteSpace([string]$item.Changes)) {Get-Text 'NoIndividualChanges'} else {$item.Changes}; [System.Windows.MessageBox]::Show("$($item.Time)`n$($item.Summary)`n`n$changes", (Get-Text 'HistoryDetailsTitle'), 'OK', 'Information') | Out-Null } })
+$accessGrid.Add_MouseDoubleClick({ $item=$accessGrid.SelectedItem; if ($item) { [System.Windows.MessageBox]::Show((Format-Text 'AccessDetails' @($item.ProcessName,$item.ProcessId,$item.Folder,$item.Operation,$item.AccessCount,$item.ExecutablePath)), (Get-Text 'AccessDetailsTitle'), 'OK', 'Information') | Out-Null } })
 
+$script:LanguageChanging = $true
+$languageSelector.SelectedIndex = if ($script:Language -eq 'en') { 1 } else { 0 }
+$script:LanguageChanging = $false
+Apply-Language
 if ($UiSmokeTest) {
     try {
         $results = @()
         foreach ($name in @('Overview','Activities','Findings','History','Access','Changes')) {
             Set-View $name
             $visibleCount = @($overviewView,$activitiesView,$findingsView,$historyView,$accessView,$changesView | Where-Object { $_.Visibility -eq 'Visible' }).Count
-            $results += [pscustomobject]@{ View=$name; Passed=($visibleCount -eq 1); VisibleCount=$visibleCount }
+            $results += [pscustomobject]@{ Type='View'; Name=$name; Passed=($visibleCount -eq 1); Detail="$visibleCount visible" }
         }
+        $originalLanguage = $script:Language
+        foreach ($language in @('de','en')) {
+            Set-Language -Language $language -Save $false
+            $expectedOverview = if ($language -eq 'en') { 'Overview' } else { [string](Get-Text 'NavOverview') }
+            $expectedProvider = if ($language -eq 'en') { 'PROVIDER' } else { [string](Get-Text 'HeaderProvider') }
+            $expectedUnknown = if ($language -eq 'en') { 'Unknown service' } else { [string](Get-Text 'UnknownService') }
+            $expectedAccess = if ($language -eq 'en') { 'Start 5-second scan' } else { [string](Get-Text 'AccessStart') }
+            $results += [pscustomobject]@{ Type='Language'; Name="$language-navigation"; Passed=([string]$navOverview.Content -eq $expectedOverview); Detail=[string]$navOverview.Content }
+            $results += [pscustomobject]@{ Type='Language'; Name="$language-provider-header"; Passed=([string]$activityGrid.Columns[2].Header -eq $expectedProvider); Detail=[string]$activityGrid.Columns[2].Header }
+            $results += [pscustomobject]@{ Type='Language'; Name="$language-unknown-provider"; Passed=((Convert-DisplayText 'Unbekannter Dienst') -eq $expectedUnknown); Detail=(Convert-DisplayText 'Unbekannter Dienst') }
+            $results += [pscustomobject]@{ Type='Language'; Name="$language-access-button"; Passed=([string]$accessScanButton.Content -eq $expectedAccess); Detail=[string]$accessScanButton.Content }
+        }
+        Set-Language -Language $originalLanguage -Save $false
         $passed = @($results | Where-Object { $_.Passed }).Count
-        [pscustomobject]@{ Product='TrackerRadar Alpha'; Version=$script:Version; Passed=$passed; Failed=($results.Count-$passed); Views=$results } | ConvertTo-Json -Depth 5
+        [pscustomobject]@{ Product='TrackerRadar Alpha'; Version=$script:Version; Passed=$passed; Failed=($results.Count-$passed); Checks=$results } | ConvertTo-Json -Depth 6
         if ($passed -ne $results.Count) { exit 1 }
         exit 0
     } catch {

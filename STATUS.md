@@ -1,47 +1,36 @@
 # TrackerRadar Alpha - Status
 
-Stand: 2026-08-04, 16:58 Uhr Europe/Berlin
+Stand: 2026-08-04, 17:48 Uhr Europe/Berlin
 
 ## Ergebnis
 
-TrackerRadar `0.5.0-alpha` ist als portable, lokale Windows-App mit Netzwerktransparenz, reversiblen Safe-Control-Funktionen und einem bewusst gestarteten Datei- und Ordnerzugriffs-Kurzscan lauffaehig.
+TrackerRadar `0.5.1-alpha` ist als portable, lokale Windows-App mit Netzwerktransparenz, reversiblen Safe-Control-Funktionen, manuellem Datei-/Ordnerzugriffs-Kurzscan und vollstaendig lokaler Deutsch-/Englisch-Auswahl lauffaehig.
 
 - Startdatei: `Start-TrackerRadar.cmd`
 - Installation: nicht erforderlich
+- Sprachen: Deutsch und English
+- Sprachwahl: sofort umschaltbar und lokal gespeichert
 - Hauptoberflaeche: ohne dauerhafte Administratorrechte
-- Dateizugriffs-Scan: nur nach ausdruecklichem Start und sichtbarer Windows-UAC-Freigabe
 - Cloud/Telemetrie: keine
-- Zusaetzliche Runtime: keine Installation notwendig
 - Hintergrunddienst oder eigener Treiber: keiner
 
-## Neu in 0.5
+## Neu in 0.5.1
 
-- Sechste Ansicht `Dateizugriffe`
-- Manueller Fuenf-Sekunden-Scan fuer:
-  - Dokumente
-  - Desktop
-  - Downloads
-  - OneDrive
-  - Edge-Profile
-  - Chrome-Profile
-- Gruppierung nach Prozessname, PID, Programmpfad, Ordnerkategorie, beobachteter Aktion und Ereignisanzahl
-- Beobachtete Aktionsarten:
-  - `Geoeffnet`
-  - `Ordner durchsucht`
-- Keine Speicherung von Dateiinhalten
-- Keine Speicherung einzelner Dateinamen im zusammengefassten Ergebnis
-- Temporaere ETL- und CSV-Rohdaten werden direkt nach der lokalen Auswertung entfernt
-- Eigene portable Scan-Engine und eigener lokal begrenzter UAC-Wrapper
-- Der Dateizugriffs-Scan laeuft nicht automatisch im 30-Sekunden-Netzwerkintervall
-
-## Seit 0.4 enthalten
-
-- Internetzugriff einer ausgewaehlten Anwendung ueber eine ausgehende Windows-Firewall-Regel blockieren
-- Ausgewaehlte neue, geaenderte oder auffaellige Autostarts deaktivieren
-- Lokaler Change Vault mit Zeit, Aktion, Ziel und Status
-- Ruecknahme unterstuetzter Firewall-, Registry- und Startup-Ordner-Aenderungen
-- Keine automatische Blockierung oder Bereinigung
-- Keine dauerhafte privilegierte App und kein neuer Windows-Dienst
+- Sprachwahlschalter oben rechts in der Anwendung
+- vollstaendige lokale Uebersetzung von:
+  - Navigation und Seitentiteln
+  - Buttons und Statusmeldungen
+  - Tabellenueberschriften
+  - Anbieter-, Zweck-, Status- und Zugriffsbezeichnungen
+  - unterstuetzten Bestaetigungs- und Detaildialogen
+  - Dateizugriffs- und Change-Vault-Ansichten
+- getrennte UTF-8-Sprachdateien:
+  - `locales/de.json`
+  - `locales/en.json`
+- lokales Lokalisierungsmodul `TrackerRadar.Localization.ps1`
+- Spracheinstellung ausschliesslich unter `data/ui-settings.json`
+- keine Cloud-Uebersetzung und keine neue Runtime
+- Sprachwechsel verwendet den letzten lokalen Scan erneut und loest keinen neuen Systemscan aus
 
 ## Verifizierte Funktionen
 
@@ -50,49 +39,56 @@ TrackerRadar `0.5.0-alpha` ist als portable, lokale Windows-App mit Netzwerktran
 - Control-UAC-Wrapper: **3/3 PASS**
 - Dateizugriffs-Parser und Datenschutzregeln: **6/6 PASS**
 - Dateizugriffs-UAC-Wrapper: **3/3 PASS**
-- UI-Navigation: **6/6 PASS**
-- Reeller Fuenf-Sekunden-Benutzerordner-Scan: **PASS**
-- Prozess-zu-Ordnerkategorie-Zuordnung: **PASS**
-- Automatische ETL-/CSV-Bereinigung: **PASS**
+- Lokalisierungsdateien, Unicode und Speicherung: **8/8 PASS**
+- zweisprachige UI und Navigation: **14/14 PASS**
+- sechs Ansichten in beiden Sprachen: **PASS**
+- German Unicode labels verified by code point: **PASS**
+- `Unbekannter Dienst` / `Unknown service`: **PASS**
+- Sprachwahl nach Neustart wiederhergestellt: **PASS**
 - GUI-Start: **PASS**
 - GUI-Fehlerausgabe: leer
-- Change Vault nach Tests: leer
 
 ## Letzter Regressionstest
 
-- Working Set nach 10 Sekunden: **182,1 MB**
-- Privater Speicher nach 10 Sekunden: **163,3 MB**
-- CPU-Zeit nach 10 Sekunden: **3,91 Sekunden**
+- Working Set nach 10 Sekunden: **198,8 MB**
+- privater Speicher nach 10 Sekunden: **180,7 MB**
+- CPU-Zeit nach 10 Sekunden: **3,52 Sekunden**
 - Ziel unter 200 MB Working Set: **PASS**
 - GUI-Fehler: **keine**
 
 ## Portable-Paket
 
-- Datei: `dist/TrackerRadar-0.5.0-alpha-portable.zip`
-- Groesse: **223.816 Bytes**
-- SHA-256: `23395ED9A141C773883B3EF4F31893AB96B91514F869FF29DB26BEBE8B024843`
-- Build-Gates: App **10/10**, Control **9/9**, Control-Wrapper **3/3**, Access-Scan **6/6**, Access-Wrapper **3/3**, Navigation **6/6**
+- Datei: `dist/TrackerRadar-0.5.1-alpha-portable.zip`
+- Groesse: **234.976 Bytes**
+- SHA-256: `8ECD4C966F93A70B67EFD778713F61BDA06BBA679EF06EB59A28D529D01ED1DA`
+- Hashdatei stimmt ueberein: **PASS**
+- Sprachmodul und beide Locale-Dateien im ZIP: **PASS**
+- App-, Lokalisierungs- und zweisprachiger UI-Test aus frischer Entpackung: **PASS**
 
-## Sicherheits- und Datenschutzgrenzen
+## Datenschutz
 
-- Der Dateizugriffs-Scan ist ein manueller Kurzscan, keine permanente Ueberwachung.
-- Die Ereignisse zeigen beobachtetes Oeffnen oder Durchsuchen; sie beweisen nicht automatisch Lesen, Kopieren, Hochladen oder boeswillige Absicht.
-- Programmpfade, Prozess-IDs und lokale Diagnoseprotokolle koennen maschinenspezifische Informationen enthalten und bleiben deshalb im ignorierten `data/`-Ordner.
-- TrackerRadar entschluesselt keine HTTPS-Inhalte.
-- Anbieter- und Zweckbezeichnungen fuer Netzwerkziele sind Heuristiken, kein Eigentums- oder Absichtsnachweis.
+- keine Cloud-Uebersetzung
+- kein Benutzerkonto
+- keine Uebermittlung der Sprachwahl
+- gespeichert wird nur `de` oder `en` in der lokalen, von Git ausgeschlossenen Einstellungsdatei
+- Scan-, Prozess- und Dateizugriffsdaten bleiben unveraendert lokal
+
+## Grenzen
+
+- Anbieter- und Zweckbezeichnungen bleiben erklaerende Heuristiken; die Sprachumschaltung verbessert keine technische Anbietererkennung.
+- `Unknown service` bedeutet weiterhin, dass aus dem lokalen DNS-Cache kein verlaesslicher Anbieter abgeleitet werden konnte.
+- Der Dateizugriffs-Scan bleibt ein manueller Kurzscan und keine Dauerueberwachung.
 - TrackerRadar ist kein Ersatz fuer Antivirus, EDR oder professionelle Incident Response.
 
-## Noch offene Release-Gates
+## Noch offene oeffentliche Release-Gates
 
-- Isolierten Firewall-Block-/Undo-Test mit beiden sichtbaren UAC-Bestaetigungen vollstaendig abschliessen
+- isolierten Firewall-Block-/Undo-Test mit beiden sichtbaren UAC-Bestaetigungen abschliessen
 - Clean-Checkout-Test auf einem zweiten Windows-PC
 - Lizenzentscheidung treffen
-- Rechte an allen Marken- und Bildassets abschliessend bestaetigen
-- Aktuelle Screenshots aus dem 0.5-Release-Build erstellen
+- Rechte an Marken- und Bildassets abschliessend bestaetigen
+- aktuelle Release-Screenshots erstellen
 - Entscheidung zu Code Signing und Installer
 
 ## Bewertung
 
-Version 0.5 beweist den zentralen Produktbaustein: TrackerRadar kann einen Windows-Prozess lokal einer sensiblen Ordnerkategorie zuordnen und die Ereignisse endnutzertauglich buendeln. Die Umsetzung bleibt bewusst schlank: kein Electron, keine Datenbank, keine Cloud, kein dauerhaftes ETW, kein Dienst und kein eigener Treiber.
-
-Der naechste funktionale Schritt ist nicht mehr Datenerfassung, sondern eine vorsichtige Korrelation zwischen einem gebuendelten Dateizugriff und einer zeitnahen neuen externen Verbindung. Diese Korrelation darf nur als nachvollziehbare Evidenz dargestellt werden, nicht als automatische Malware-Behauptung.
+Version 0.5.1 macht TrackerRadar fuer deutsch- und englischsprachige Endnutzer verwendbar, ohne die Architektur aufzublaehen. Die Uebersetzung ist vollstaendig lokal, separat testbar und Bestandteil des Portable-Builds. Netzwerk-, Access-Scan- und Safe-Control-Verhalten wurden nicht veraendert.

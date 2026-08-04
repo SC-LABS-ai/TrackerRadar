@@ -9,6 +9,7 @@ TrackerRadar is designed as a local-first Windows application.
 - No analytics, advertising or product telemetry
 - No automatic upload of scan results
 - Reports, baseline data, history and Change Vault records are written locally under `data/`
+- The selected interface language (`de` or `en`) is stored locally in `data/ui-settings.json`; no profile or account data is required
 - Change Vault records may contain local executable paths, startup names and Registry locations needed for rollback
 - Control requests and responses remain local and are removed after processing
 - HTTPS payloads are not decrypted

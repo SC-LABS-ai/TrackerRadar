@@ -6,6 +6,7 @@ $control = Join-Path $root 'TrackerRadar.Control.ps1'
 $elevated = Join-Path $root 'TrackerRadar.Elevated.ps1'
 $accessScan = Join-Path $root 'TrackerRadar.AccessScan.ps1'
 $accessElevated = Join-Path $root 'TrackerRadar.AccessScan.Elevated.ps1'
+$localizationTest = Join-Path $root 'Test-TrackerRadar-Localization.ps1'
 if (-not (Test-Path -LiteralPath $data)) { New-Item -ItemType Directory -Path $data | Out-Null }
 
 $selfOut = Join-Path $data 'app-selftest-output.txt'
@@ -13,16 +14,18 @@ $controlOut = Join-Path $data 'control-selftest-output.txt'
 $elevatedOut = Join-Path $data 'elevated-selftest-output.txt'
 $accessOut = Join-Path $data 'access-selftest-output.txt'
 $accessElevatedOut = Join-Path $data 'access-elevated-selftest-output.txt'
+$localizationOut = Join-Path $data 'localization-selftest-output.txt'
 $uiOut = Join-Path $data 'app-ui-smoke-output.txt'
 $guiOut = Join-Path $data 'app-gui-stdout.txt'
 $guiErr = Join-Path $data 'app-gui-stderr.txt'
-Remove-Item $selfOut,$controlOut,$elevatedOut,$accessOut,$accessElevatedOut,$uiOut,$guiOut,$guiErr -Force -ErrorAction SilentlyContinue
+Remove-Item $selfOut,$controlOut,$elevatedOut,$accessOut,$accessElevatedOut,$localizationOut,$uiOut,$guiOut,$guiErr -Force -ErrorAction SilentlyContinue
 
 $self = Start-Process powershell.exe -ArgumentList @('-NoLogo','-NoProfile','-NonInteractive','-ExecutionPolicy','Bypass','-File',$app,'-SelfTest') -Wait -PassThru -RedirectStandardOutput $selfOut
 $controlTest = Start-Process powershell.exe -ArgumentList @('-NoLogo','-NoProfile','-NonInteractive','-ExecutionPolicy','Bypass','-File',$control,'-SelfTest') -Wait -PassThru -RedirectStandardOutput $controlOut
 $elevatedTest = Start-Process powershell.exe -ArgumentList @('-NoLogo','-NoProfile','-NonInteractive','-ExecutionPolicy','Bypass','-File',$elevated,'-SelfTest') -Wait -PassThru -RedirectStandardOutput $elevatedOut
 $accessTest = Start-Process powershell.exe -ArgumentList @('-NoLogo','-NoProfile','-NonInteractive','-ExecutionPolicy','Bypass','-File',$accessScan,'-SelfTest') -Wait -PassThru -RedirectStandardOutput $accessOut
 $accessElevatedTest = Start-Process powershell.exe -ArgumentList @('-NoLogo','-NoProfile','-NonInteractive','-ExecutionPolicy','Bypass','-File',$accessElevated,'-SelfTest') -Wait -PassThru -RedirectStandardOutput $accessElevatedOut
+$localizationSelfTest = Start-Process powershell.exe -ArgumentList @('-NoLogo','-NoProfile','-NonInteractive','-ExecutionPolicy','Bypass','-File',$localizationTest) -Wait -PassThru -RedirectStandardOutput $localizationOut
 $uiSmoke = Start-Process powershell.exe -ArgumentList @('-NoLogo','-NoProfile','-STA','-ExecutionPolicy','Bypass','-File',$app,'-UiSmokeTest') -Wait -PassThru -RedirectStandardOutput $uiOut
 $gui = Start-Process powershell.exe -ArgumentList @('-NoLogo','-NoProfile','-STA','-ExecutionPolicy','Bypass','-File',$app) -PassThru -RedirectStandardOutput $guiOut -RedirectStandardError $guiErr
 
@@ -49,6 +52,7 @@ $result = [pscustomobject]@{
     ElevatedSelfTestExitCode = $elevatedTest.ExitCode
     AccessSelfTestExitCode = $accessTest.ExitCode
     AccessElevatedSelfTestExitCode = $accessElevatedTest.ExitCode
+    LocalizationSelfTestExitCode = $localizationSelfTest.ExitCode
     UiSmokeExitCode = $uiSmoke.ExitCode
     GuiStarted = $alive
     WorkingSetMb = $workingSetMb
@@ -58,7 +62,7 @@ $result = [pscustomobject]@{
     RamTarget150Passed = ($workingSetMb -gt 0 -and $workingSetMb -le 150)
     RamTarget180Passed = ($workingSetMb -gt 0 -and $workingSetMb -le 180)
     RamTarget200Passed = ($workingSetMb -gt 0 -and $workingSetMb -le 200)
-    OverallPassed = ($self.ExitCode -eq 0 -and $controlTest.ExitCode -eq 0 -and $elevatedTest.ExitCode -eq 0 -and $accessTest.ExitCode -eq 0 -and $accessElevatedTest.ExitCode -eq 0 -and $uiSmoke.ExitCode -eq 0 -and $alive -and [string]::IsNullOrWhiteSpace($errorText))
+    OverallPassed = ($self.ExitCode -eq 0 -and $controlTest.ExitCode -eq 0 -and $elevatedTest.ExitCode -eq 0 -and $accessTest.ExitCode -eq 0 -and $accessElevatedTest.ExitCode -eq 0 -and $localizationSelfTest.ExitCode -eq 0 -and $uiSmoke.ExitCode -eq 0 -and $alive -and [string]::IsNullOrWhiteSpace($errorText))
 }
 $result | ConvertTo-Json -Depth 4 | Set-Content -LiteralPath (Join-Path $data 'app-full-test.json') -Encoding UTF8
 $result | ConvertTo-Json -Depth 4
