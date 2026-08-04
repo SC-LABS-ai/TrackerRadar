@@ -4,9 +4,34 @@ All notable changes to TrackerRadar are documented here.
 
 ## [Unreleased]
 
-- Full sensitive-file access correlation
-- Safe per-application blocking and rollback
+- File-access and network-event correlation
+- Richer operation classification without overstating intent
 - Compiled Windows build and signed installer
+
+## [0.5.0-alpha] - 2026-08-04
+
+### Added
+- Manual five-second file-access scan for Documents, Desktop, Downloads, OneDrive, Edge profiles and Chrome profiles
+- Sixth navigation view for grouped file-access results
+- Process name, PID, executable path, folder category, observed operation and grouped event count
+- Separate portable scan engine and visible-UAC wrapper
+
+### Privacy and safety
+- No document contents or individual file names stored in the summarized result
+- Temporary ETL and CSV trace files deleted immediately after processing
+- No permanent ETW session, driver, service or background file monitor
+- Operation labels limited to observed open and directory-enumeration events
+
+### Verified
+- Application core: 10/10 passed
+- Access parser and privacy rules: 6/6 passed
+- Access UAC wrapper: 3/3 passed
+- UI navigation: 6/6 passed
+- Real five-second user-folder scan: passed
+- Raw ETL and CSV cleanup: passed
+- GUI launch: passed with no errors
+- Working set after ten seconds: 182.0 MB
+- Private memory after ten seconds: 163.3 MB
 
 ## [0.4.1-alpha] - 2026-08-03
 

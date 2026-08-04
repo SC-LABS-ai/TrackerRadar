@@ -1,5 +1,5 @@
 param(
-    [string]$Version = '0.4.1-alpha'
+    [string]$Version = '0.5.0-alpha'
 )
 
 $ErrorActionPreference = 'Stop'
@@ -15,6 +15,10 @@ if ($LASTEXITCODE -ne 0) { throw 'Monitoring self-test failed. Package was not c
 if ($LASTEXITCODE -ne 0) { throw 'Control self-test failed. Package was not created.' }
 & powershell.exe -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -File (Join-Path $root 'TrackerRadar.Elevated.ps1') -SelfTest
 if ($LASTEXITCODE -ne 0) { throw 'Elevated-wrapper self-test failed. Package was not created.' }
+& powershell.exe -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -File (Join-Path $root 'TrackerRadar.AccessScan.ps1') -SelfTest
+if ($LASTEXITCODE -ne 0) { throw 'Access-scan self-test failed. Package was not created.' }
+& powershell.exe -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -File (Join-Path $root 'TrackerRadar.AccessScan.Elevated.ps1') -SelfTest
+if ($LASTEXITCODE -ne 0) { throw 'Access-scan wrapper self-test failed. Package was not created.' }
 & powershell.exe -NoLogo -NoProfile -STA -ExecutionPolicy Bypass -File (Join-Path $root 'TrackerRadar.App.ps1') -UiSmokeTest
 if ($LASTEXITCODE -ne 0) { throw 'UI smoke test failed. Package was not created.' }
 
@@ -26,6 +30,8 @@ $files = @(
     'TrackerRadar.App.ps1',
     'TrackerRadar.Control.ps1',
     'TrackerRadar.Elevated.ps1',
+    'TrackerRadar.AccessScan.ps1',
+    'TrackerRadar.AccessScan.Elevated.ps1',
     'Start-TrackerRadar.cmd',
     'Test-TrackerRadar-App.ps1',
     'Test-Firewall-BlockUndo.ps1',

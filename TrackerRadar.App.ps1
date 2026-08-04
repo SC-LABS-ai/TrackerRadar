@@ -7,12 +7,14 @@ param(
 Set-StrictMode -Version 2.0
 $ErrorActionPreference = 'Stop'
 
-$script:Version = '0.4.1-alpha'
+$script:Version = '0.5.0-alpha'
 $script:Root = Split-Path -Parent $MyInvocation.MyCommand.Path
+if ((Split-Path -Leaf $script:Root) -eq '_development') { $script:Root = Split-Path -Parent $script:Root }
 $script:Data = Join-Path $script:Root 'data'
 $script:State = Join-Path $script:Data 'state'
 $script:History = Join-Path $script:Data 'history'
-foreach ($folder in @($script:Data, $script:State, $script:History)) {
+$script:AccessScanData = Join-Path $script:Data 'access-scan'
+foreach ($folder in @($script:Data, $script:State, $script:History, $script:AccessScanData)) {
     if (-not (Test-Path -LiteralPath $folder)) {
         New-Item -ItemType Directory -Path $folder | Out-Null
     }
@@ -636,7 +638,7 @@ function Get-Snapshot {
             'Momentaufnahme aktiver externer TCP-Verbindungen',
             'Domainnamen stammen aus dem lokalen Windows-DNS-Cache und sind nicht immer verfuegbar',
             'Keine Entschluesselung von HTTPS-Inhalten',
-            'Datei-Lesezugriffe werden in dieser Alpha noch nicht vollstaendig erfasst'
+            'Dateizugriffe werden nur im bewusst gestarteten Kurzscan erfasst; keine Dauerueberwachung'
         )
     }
 
@@ -658,6 +660,8 @@ function Invoke-SelfTest {
     } catch {
         $checks += [pscustomobject]@{ Name='WPF'; Passed=$false; Detail=$_.Exception.Message }
     }
+    $checks += [pscustomobject]@{ Name='AccessScan'; Passed=(Test-Path -LiteralPath (Join-Path $script:Root 'TrackerRadar.AccessScan.ps1') -PathType Leaf); Detail='Manueller File-I/O-Kurzscan' }
+    $checks += [pscustomobject]@{ Name='AccessScanWrapper'; Passed=(Test-Path -LiteralPath (Join-Path $script:Root 'TrackerRadar.AccessScan.Elevated.ps1') -PathType Leaf); Detail='Sichtbare UAC-Ausfuehrung' }
     try {
         $snapshot = Get-Snapshot
         $checks += [pscustomobject]@{ Name='Live-Snapshot'; Passed=$true; Detail="$($snapshot.ExternalConnections) Verbindung(en), $($snapshot.DurationMs) ms" }
@@ -692,7 +696,7 @@ Add-Type -AssemblyName PresentationFramework, PresentationCore, WindowsBase
 [xml]$xaml = @'
 <Window xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="TrackerRadar 0.4.1 Alpha | SC LABS" Width="1180" Height="720" MinWidth="960" MinHeight="620"
+        Title="TrackerRadar 0.5 Alpha | SC LABS" Width="1180" Height="720" MinWidth="960" MinHeight="620"
         WindowStartupLocation="CenterScreen" Background="#071018" Foreground="#ECF3F7"
         FontFamily="Segoe UI" FontSize="14">
     <Window.Resources>
@@ -787,6 +791,7 @@ Add-Type -AssemblyName PresentationFramework, PresentationCore, WindowsBase
                     <Button x:Name="NavActivities" Style="{StaticResource NavButton}" Content="Aktivitaeten"/>
                     <Button x:Name="NavFindings" Style="{StaticResource NavButton}" Content="Befunde"/>
                     <Button x:Name="NavHistory" Style="{StaticResource NavButton}" Content="Verlauf"/>
+                    <Button x:Name="NavAccess" Style="{StaticResource NavButton}" Content="Dateizugriffe"/>
                     <Button x:Name="NavChanges" Style="{StaticResource NavButton}" Content="Aenderungen"/>
                 </StackPanel>
                 <Border Grid.Row="3" Background="#0E211D" BorderBrush="#1C523F" BorderThickness="1" CornerRadius="12" Padding="13">
@@ -853,6 +858,17 @@ Add-Type -AssemblyName PresentationFramework, PresentationCore, WindowsBase
                     </Grid>
                 </Border>
 
+                <Border x:Name="AccessView" Visibility="Collapsed" Background="{StaticResource Panel}" BorderBrush="{StaticResource Line}" BorderThickness="1" CornerRadius="12" ClipToBounds="True">
+                    <Grid><Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
+                        <Grid Margin="17,14,17,11"><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                            <StackPanel><TextBlock Text="Manueller Datei- und Ordnerzugriffs-Scan" FontSize="18" FontWeight="SemiBold"/><TextBlock Text="Fuenf Sekunden, lokale Windows-Ereignisse, keine Dateiinhalte und keine einzelnen Dateinamen" Foreground="#8399A6" FontSize="12" Margin="0,3,0,0"/></StackPanel>
+                            <Button x:Name="AccessScanButton" Grid.Column="1" Content="5-Sekunden-Scan starten" MinWidth="210" Margin="15,0,0,0"/>
+                        </Grid>
+                        <DataGrid x:Name="AccessGrid" Grid.Row="1" AlternationCount="2"><DataGrid.Columns><DataGridTextColumn Header="APP" Binding="{Binding ProcessName}" Width="1.15*"/><DataGridTextColumn Header="PID" Binding="{Binding ProcessId}" Width="70"/><DataGridTextColumn Header="ORDNER" Binding="{Binding Folder}" Width="1.1*"/><DataGridTextColumn Header="AKTION" Binding="{Binding Operation}" Width="130"/><DataGridTextColumn Header="ZUGRIFFE" Binding="{Binding AccessCount}" Width="85"/><DataGridTextColumn Header="PROGRAMMPFAD" Binding="{Binding ExecutablePath}" Width="2.2*"/></DataGrid.Columns></DataGrid>
+                        <TextBlock x:Name="AccessSummary" Grid.Row="2" Text="Noch kein Kurzscan vorhanden." Foreground="#8DA1AD" TextWrapping="Wrap" Margin="17,11,17,14"/>
+                    </Grid>
+                </Border>
+
                 <Border x:Name="ChangesView" Visibility="Collapsed" Background="{StaticResource Panel}" BorderBrush="{StaticResource Line}" BorderThickness="1" CornerRadius="12" ClipToBounds="True">
                     <Grid><Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
                         <StackPanel Margin="17,14,17,11"><TextBlock Text="Change Vault" FontSize="18" FontWeight="SemiBold"/><TextBlock Text="Jede genehmigte Systemaenderung mit sicherer Ruecknahme" Foreground="#8399A6" FontSize="12" Margin="0,3,0,0"/></StackPanel>
@@ -862,7 +878,7 @@ Add-Type -AssemblyName PresentationFramework, PresentationCore, WindowsBase
                 </Border>
             </Grid>
 
-            <Grid Grid.Row="2" Margin="0,13,0,0"><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions><TextBlock x:Name="StatusText" Text="Bereit" Foreground="#8DA1AD"/><TextBlock Grid.Column="1" Text="TrackerRadar 0.4.1 Alpha | SC LABS" Foreground="#627985"/></Grid>
+            <Grid Grid.Row="2" Margin="0,13,0,0"><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions><TextBlock x:Name="StatusText" Text="Bereit" Foreground="#8DA1AD"/><TextBlock Grid.Column="1" Text="TrackerRadar 0.5 Alpha | SC LABS" Foreground="#627985"/></Grid>
         </Grid>
     </Grid>
 </Window>
@@ -881,6 +897,9 @@ $overviewFindingsList = $window.FindName('OverviewFindingsList')
 $activityGrid = $window.FindName('ActivityGrid')
 $findingsGrid = $window.FindName('FindingsGrid')
 $historyGrid = $window.FindName('HistoryGrid')
+$accessGrid = $window.FindName('AccessGrid')
+$accessSummary = $window.FindName('AccessSummary')
+$accessScanButton = $window.FindName('AccessScanButton')
 $changeGrid = $window.FindName('ChangeGrid')
 $blockInternetButton = $window.FindName('BlockInternetButton')
 $disableStartupButton = $window.FindName('DisableStartupButton')
@@ -898,11 +917,13 @@ $navOverview = $window.FindName('NavOverview')
 $navActivities = $window.FindName('NavActivities')
 $navFindings = $window.FindName('NavFindings')
 $navHistory = $window.FindName('NavHistory')
+$navAccess = $window.FindName('NavAccess')
 $navChanges = $window.FindName('NavChanges')
 $overviewView = $window.FindName('OverviewView')
 $activitiesView = $window.FindName('ActivitiesView')
 $findingsView = $window.FindName('FindingsView')
 $historyView = $window.FindName('HistoryView')
+$accessView = $window.FindName('AccessView')
 $changesView = $window.FindName('ChangesView')
 
 function Set-UiImage {
@@ -916,6 +937,62 @@ function Set-UiImage {
     $bitmap.Freeze()
     $Control.Source = $bitmap
     return $bitmap
+}
+
+function Get-AccessScanResult {
+    return (Read-JsonFile (Join-Path $script:AccessScanData 'latest-access-scan.json'))
+}
+
+function Update-AccessView {
+    $result = Get-AccessScanResult
+    if (-not $result) {
+        $accessGrid.ItemsSource = @()
+        $accessSummary.Text = 'Noch kein Kurzscan vorhanden. Der Scan laeuft nur nach ausdruecklichem Start.'
+        return
+    }
+    $accessGrid.ItemsSource = @($result.Groups)
+    $time = [string]$result.Timestamp
+    try { $time = ([datetime]$result.Timestamp).ToString('dd.MM.yyyy HH:mm:ss') } catch { }
+    $folders = @($result.MonitoredFolders) -join ', '
+    $accessSummary.Text = "Letzter Kurzscan: $time | $($result.DurationSeconds) Sekunden | $($result.GroupCount) Gruppe(n) | Ordner: $folders | Rohdaten automatisch geloescht"
+}
+
+function Start-AccessScan {
+    $wrapper = Join-Path $script:Root 'TrackerRadar.AccessScan.Elevated.ps1'
+    if (-not (Test-Path -LiteralPath $wrapper -PathType Leaf)) { throw 'TrackerRadar.AccessScan.Elevated.ps1 fehlt.' }
+    $resultPath = Join-Path $script:AccessScanData 'latest-access-scan.json'
+    $previousWrite = [datetime]::MinValue
+    if (Test-Path -LiteralPath $resultPath) { $previousWrite = (Get-Item -LiteralPath $resultPath).LastWriteTimeUtc }
+
+    $accessScanButton.IsEnabled = $false
+    $accessScanButton.Content = 'Scan laeuft ...'
+    $statusText.Text = 'Dateizugriffs-Kurzscan wird vorbereitet ...'
+    $window.Cursor = [System.Windows.Input.Cursors]::Wait
+    $window.Dispatcher.Invoke([action]{}, 'Background')
+    try {
+        $argumentString = '-NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -File "' + $wrapper + '"'
+        try {
+            $process = Start-Process powershell.exe -Verb RunAs -ArgumentList $argumentString -Wait -PassThru
+        } catch {
+            $nativeCode = 0
+            try { $nativeCode = [int]$_.Exception.NativeErrorCode } catch { }
+            if ($nativeCode -eq 1223 -or $_.Exception.Message -match 'canceled|cancelled|abgebrochen') {
+                throw 'Windows-Abfrage wurde abgebrochen. Der bisherige Scan bleibt erhalten.'
+            }
+            throw
+        }
+        if ($process.ExitCode -ne 0) { throw "Dateizugriffs-Scan fehlgeschlagen (Exit $($process.ExitCode))." }
+        if (-not (Test-Path -LiteralPath $resultPath -PathType Leaf)) { throw 'Der Scan lieferte kein Ergebnis.' }
+        $newWrite = (Get-Item -LiteralPath $resultPath).LastWriteTimeUtc
+        if ($newWrite -le $previousWrite) { throw 'Der Scan wurde nicht aktualisiert.' }
+        Update-AccessView
+        $result = Get-AccessScanResult
+        $statusText.Text = "Dateizugriffs-Scan abgeschlossen: $($result.GroupCount) Gruppe(n), Rohdaten geloescht."
+    } finally {
+        $window.Cursor = [System.Windows.Input.Cursors]::Arrow
+        $accessScanButton.Content = '5-Sekunden-Scan starten'
+        $accessScanButton.IsEnabled = $true
+    }
 }
 
 function Get-ChangeVaultRows {
@@ -1012,8 +1089,8 @@ if ($trackerRadarBitmap) { $window.Icon = $trackerRadarBitmap }
 
 function Set-View {
     param([string]$Name)
-    foreach ($view in @($overviewView,$activitiesView,$findingsView,$historyView,$changesView)) { $view.Visibility = 'Collapsed' }
-    foreach ($button in @($navOverview,$navActivities,$navFindings,$navHistory,$navChanges)) {
+    foreach ($view in @($overviewView,$activitiesView,$findingsView,$historyView,$accessView,$changesView)) { $view.Visibility = 'Collapsed' }
+    foreach ($button in @($navOverview,$navActivities,$navFindings,$navHistory,$navAccess,$navChanges)) {
         $button.Background = [System.Windows.Media.Brushes]::Transparent
         $button.Foreground = New-Object System.Windows.Media.SolidColorBrush ([System.Windows.Media.Color]::FromRgb(170,186,196))
         $button.FontWeight = 'Normal'
@@ -1023,6 +1100,7 @@ function Set-View {
         'Activities' { $activitiesView.Visibility='Visible'; $navActivities.Background='#102630'; $navActivities.Foreground='#25D7C0'; $navActivities.FontWeight='SemiBold'; $viewTitle.Text='Aktivitaeten'; $viewSubtitle.Text='Alle aktuellen Ziele mit Anbieter, IP und erstem Erkennungszeitpunkt.' }
         'Findings' { $findingsView.Visibility='Visible'; $navFindings.Background='#102630'; $navFindings.Foreground='#25D7C0'; $navFindings.FontWeight='SemiBold'; $viewTitle.Text='Befunde'; $viewSubtitle.Text='Nur neue, veraenderte oder technisch auffaellige Aktivitaeten.' }
         'History' { $historyView.Visibility='Visible'; $navHistory.Background='#102630'; $navHistory.Foreground='#25D7C0'; $navHistory.FontWeight='SemiBold'; $viewTitle.Text='Verlauf'; $viewSubtitle.Text='Lokal gespeicherte Aenderungen der letzten sieben Tage.' }
+        'Access' { $accessView.Visibility='Visible'; $navAccess.Background='#102630'; $navAccess.Foreground='#25D7C0'; $navAccess.FontWeight='SemiBold'; $viewTitle.Text='Dateizugriffe'; $viewSubtitle.Text='Manueller lokaler Kurzscan fuer Dokumente, Desktop, Downloads, OneDrive und Browserprofile.'; Update-AccessView }
         'Changes' { $changesView.Visibility='Visible'; $navChanges.Background='#102630'; $navChanges.Foreground='#25D7C0'; $navChanges.FontWeight='SemiBold'; $viewTitle.Text='Aenderungen'; $viewSubtitle.Text='Genehmigte Eingriffe mit vollstaendiger Ruecknahme.' }
         default { $overviewView.Visibility='Visible'; $navOverview.Background='#102630'; $navOverview.Foreground='#25D7C0'; $navOverview.FontWeight='SemiBold'; $viewTitle.Text='Uebersicht'; $viewSubtitle.Text='Neue Aktivitaeten und wichtige Aenderungen auf einen Blick.' }
     }
@@ -1043,6 +1121,7 @@ function Update-Ui {
         $findingsGrid.ItemsSource = @($snapshot.Findings)
         $historyGrid.ItemsSource = @($snapshot.History)
         $changeGrid.ItemsSource = @(Get-ChangeVaultRows)
+        Update-AccessView
         $appsCount.Text = [string]$snapshot.ActiveApps
         $newCount.Text = [string]$snapshot.NewCount
         $findingsCount.Text = [string]$snapshot.FindingCount
@@ -1069,8 +1148,12 @@ $navOverview.Add_Click({ Set-View 'Overview' })
 $navActivities.Add_Click({ Set-View 'Activities' })
 $navFindings.Add_Click({ Set-View 'Findings' })
 $navHistory.Add_Click({ Set-View 'History' })
+$navAccess.Add_Click({ Set-View 'Access' })
 $navChanges.Add_Click({ Set-View 'Changes' })
 $scanButton.Add_Click({ Update-Ui })
+$accessScanButton.Add_Click({
+    try { Start-AccessScan } catch { [System.Windows.MessageBox]::Show($_.Exception.Message, 'Dateizugriffs-Scan', 'OK', 'Error') | Out-Null }
+})
 $reportButton.Add_Click({ $report = Join-Path $script:Data 'latest-scan.json'; if (Test-Path -LiteralPath $report) { Start-Process explorer.exe -ArgumentList @('/select,', $report) } })
 
 $blockInternetButton.Add_Click({
@@ -1138,13 +1221,14 @@ $activityGrid.Add_MouseDoubleClick({ & $showActivity $activityGrid })
 $findingsGrid.Add_MouseDoubleClick({ $item=$findingsGrid.SelectedItem; if ($item) { [System.Windows.MessageBox]::Show("$($item.Summary)`n`n$($item.Detail)", 'Befunddetails', 'OK', 'Warning') | Out-Null } })
 $overviewFindingsList.Add_MouseDoubleClick({ $item=$overviewFindingsList.SelectedItem; if ($item) { [System.Windows.MessageBox]::Show("$($item.Summary)`n`n$($item.Detail)", 'Befunddetails', 'OK', 'Warning') | Out-Null } })
 $historyGrid.Add_MouseDoubleClick({ $item=$historyGrid.SelectedItem; if ($item) { $changes=if ([string]::IsNullOrWhiteSpace([string]$item.Changes)) {'Keine Einzelveraenderungen gespeichert.'} else {$item.Changes}; [System.Windows.MessageBox]::Show("$($item.Time)`n$($item.Summary)`n`n$changes", 'Verlaufsdetails', 'OK', 'Information') | Out-Null } })
+$accessGrid.Add_MouseDoubleClick({ $item=$accessGrid.SelectedItem; if ($item) { [System.Windows.MessageBox]::Show("App: $($item.ProcessName)`nPID: $($item.ProcessId)`nOrdner: $($item.Folder)`nAktion: $($item.Operation)`nZugriffe: $($item.AccessCount)`nProgrammpfad: $($item.ExecutablePath)`n`nKeine Dateiinhalte oder einzelnen Dateinamen wurden gespeichert.", 'Dateizugriffsdetails', 'OK', 'Information') | Out-Null } })
 
 if ($UiSmokeTest) {
     try {
         $results = @()
-        foreach ($name in @('Overview','Activities','Findings','History','Changes')) {
+        foreach ($name in @('Overview','Activities','Findings','History','Access','Changes')) {
             Set-View $name
-            $visibleCount = @($overviewView,$activitiesView,$findingsView,$historyView,$changesView | Where-Object { $_.Visibility -eq 'Visible' }).Count
+            $visibleCount = @($overviewView,$activitiesView,$findingsView,$historyView,$accessView,$changesView | Where-Object { $_.Visibility -eq 'Visible' }).Count
             $results += [pscustomobject]@{ View=$name; Passed=($visibleCount -eq 1); VisibleCount=$visibleCount }
         }
         $passed = @($results | Where-Object { $_.Passed }).Count

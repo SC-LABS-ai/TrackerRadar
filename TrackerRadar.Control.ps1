@@ -334,7 +334,7 @@ function Invoke-SelfTest {
         Remove-Item -LiteralPath $registryTestPath -Recurse -Force -ErrorAction SilentlyContinue
     }
 
-    $result = [pscustomobject]@{ Product='TrackerRadar Control'; Version='0.4.1-alpha'; Passed=@($checks | Where-Object {$_.Passed}).Count; Failed=@($checks | Where-Object {-not $_.Passed}).Count; Checks=$checks }
+    $result = [pscustomobject]@{ Product='TrackerRadar Control'; Version='0.5.0-alpha'; Passed=@($checks | Where-Object {$_.Passed}).Count; Failed=@($checks | Where-Object {-not $_.Passed}).Count; Checks=$checks }
     $result | ConvertTo-Json -Depth 6
     if ($result.Failed -gt 0) { exit 1 }
     exit 0

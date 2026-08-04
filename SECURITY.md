@@ -1,15 +1,24 @@
 # Security Policy
 
-TrackerRadar is currently an early local alpha and is not a replacement for antivirus, EDR or professional incident response.
+TrackerRadar is an early local alpha and is not a replacement for antivirus, EDR or professional incident response.
 
 ## Control model
 
-- Monitoring runs without persistent administrator rights.
+- The main interface runs without persistent administrator rights.
 - No control action is executed automatically.
 - Firewall and protected startup actions require explicit confirmation and a visible Windows UAC prompt.
-- The control helper accepts local request files only; it does not open a network port.
-- Every supported action writes rollback information to the local Change Vault before modifying Windows.
+- The control helper accepts local request files only and does not open a network port.
+- Supported control actions write rollback information to the local Change Vault before modifying Windows.
 - The current alpha only supports outbound firewall blocking and selected startup disable/undo operations.
+
+## File-access scan model
+
+- The scan starts only after an explicit user action and visible UAC approval.
+- It uses a uniquely named, short-lived Windows ETW trace session.
+- It does not install a driver, service or permanent background monitor.
+- Temporary ETL and CSV files are removed in a `finally` cleanup path.
+- The result does not store document contents or individual file names.
+- Event labels describe observed Windows events and must not be interpreted as proof that data was copied, uploaded or used maliciously.
 
 ## Reporting a vulnerability
 

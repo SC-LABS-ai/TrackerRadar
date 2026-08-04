@@ -1,26 +1,38 @@
 # TrackerRadar Alpha - Status
 
-Stand: 2026-08-03, 16:36 Uhr Europe/Berlin
+Stand: 2026-08-04, 16:58 Uhr Europe/Berlin
 
 ## Ergebnis
 
-TrackerRadar `0.4.1-alpha` ist als portable, lokale Windows-App mit bewusst begrenzten und reversiblen Safe-Control-Funktionen lauffaehig.
+TrackerRadar `0.5.0-alpha` ist als portable, lokale Windows-App mit Netzwerktransparenz, reversiblen Safe-Control-Funktionen und einem bewusst gestarteten Datei- und Ordnerzugriffs-Kurzscan lauffaehig.
 
 - Startdatei: `Start-TrackerRadar.cmd`
 - Installation: nicht erforderlich
-- Monitoring: lokal ohne dauerhafte Administratorrechte
-- Aenderungen: nur nach Bestaetigung; geschuetzte Aktionen mit sichtbarem Windows-UAC-Dialog
+- Hauptoberflaeche: ohne dauerhafte Administratorrechte
+- Dateizugriffs-Scan: nur nach ausdruecklichem Start und sichtbarer Windows-UAC-Freigabe
 - Cloud/Telemetrie: keine
 - Zusaetzliche Runtime: keine Installation notwendig
+- Hintergrunddienst oder eigener Treiber: keiner
 
-## Neu in 0.4.1
+## Neu in 0.5
 
-- Doppelte TrackerRadar-Firewall-Regeln werden vor dem Anlegen erkannt
-- Exakte Programmregel wird nach dem Anlegen verifiziert
-- Regelentfernung wird nach dem Undo verifiziert
-- Abgebrochene oder nicht bestaetigte UAC-Abfragen werden als unveraenderter Zustand gemeldet
-- Separater, lokal begrenzter UAC-Wrapper mit eigener Selbstpruefung
-- Isolierter Firewall-Test mit kopierter Windows-`curl.exe` vorbereitet
+- Sechste Ansicht `Dateizugriffe`
+- Manueller Fuenf-Sekunden-Scan fuer:
+  - Dokumente
+  - Desktop
+  - Downloads
+  - OneDrive
+  - Edge-Profile
+  - Chrome-Profile
+- Gruppierung nach Prozessname, PID, Programmpfad, Ordnerkategorie, beobachteter Aktion und Ereignisanzahl
+- Beobachtete Aktionsarten:
+  - `Geoeffnet`
+  - `Ordner durchsucht`
+- Keine Speicherung von Dateiinhalten
+- Keine Speicherung einzelner Dateinamen im zusammengefassten Ergebnis
+- Temporaere ETL- und CSV-Rohdaten werden direkt nach der lokalen Auswertung entfernt
+- Eigene portable Scan-Engine und eigener lokal begrenzter UAC-Wrapper
+- Der Dateizugriffs-Scan laeuft nicht automatisch im 30-Sekunden-Netzwerkintervall
 
 ## Seit 0.4 enthalten
 
@@ -28,73 +40,59 @@ TrackerRadar `0.4.1-alpha` ist als portable, lokale Windows-App mit bewusst begr
 - Ausgewaehlte neue, geaenderte oder auffaellige Autostarts deaktivieren
 - Lokaler Change Vault mit Zeit, Aktion, Ziel und Status
 - Ruecknahme unterstuetzter Firewall-, Registry- und Startup-Ordner-Aenderungen
-- Separater lokaler Control-Helper ohne offenen Port und ohne dauerhafte Elevation
-- Fuenfte Ansicht `Aenderungen`
-- Change-Datensatz wird vor dem Eingriff als `Pending` geschrieben
-- Registry-Werttyp wird fuer exakte Ruecknahme gespeichert
-
-## Sicherheitsgrenzen
-
 - Keine automatische Blockierung oder Bereinigung
-- Keine Loeschung unbekannter Dateien
-- Keine Entfernung von Windows-Komponenten
-- Keine dauerhafte Admin-App und kein neuer Windows-Dienst
-- Firewall-Aktion betrifft nur ausgehenden Verkehr der ausgewaehlten EXE
-- Autostart wird deaktiviert, nicht vernichtet; Originalwert oder Originaldatei bleibt im Change Vault wiederherstellbar
+- Keine dauerhafte privilegierte App und kein neuer Windows-Dienst
 
 ## Verifizierte Funktionen
 
-- Monitoring-Kern: **8/8 PASS**
+- App-Kern: **10/10 PASS**
 - Control-Helper: **9/9 PASS**
-- UAC-Wrapper: **3/3 PASS**
-- UI-Navigation: **5/5 PASS**
+- Control-UAC-Wrapper: **3/3 PASS**
+- Dateizugriffs-Parser und Datenschutzregeln: **6/6 PASS**
+- Dateizugriffs-UAC-Wrapper: **3/3 PASS**
+- UI-Navigation: **6/6 PASS**
+- Reeller Fuenf-Sekunden-Benutzerordner-Scan: **PASS**
+- Prozess-zu-Ordnerkategorie-Zuordnung: **PASS**
+- Automatische ETL-/CSV-Bereinigung: **PASS**
 - GUI-Start: **PASS**
 - GUI-Fehlerausgabe: leer
-- File-Startup deaktivieren und rueckgaengig machen: **PASS**
-- Registry-Startup deaktivieren und rueckgaengig machen: **PASS**
-- Registry-`ExpandString`-Typ unveraendert wiederhergestellt: **PASS**
-- Lokale Request/Response-Schnittstelle: **PASS**
-- Testdaten nach Pruefung bereinigt; Change Vault startet leer
+- Change Vault nach Tests: leer
 
 ## Letzter Regressionstest
 
-- Working Set nach 10 Sekunden: **185,5 MB**
-- Privater Speicher nach 10 Sekunden: **167,1 MB**
-- CPU-Zeit nach 10 Sekunden: **2,66 Sekunden**
+- Working Set nach 10 Sekunden: **182,1 MB**
+- Privater Speicher nach 10 Sekunden: **163,3 MB**
+- CPU-Zeit nach 10 Sekunden: **3,91 Sekunden**
+- Ziel unter 200 MB Working Set: **PASS**
 - GUI-Fehler: **keine**
 
 ## Portable-Paket
 
-- Datei: `dist/TrackerRadar-0.4.1-alpha-portable.zip`
-- Groesse: **215.967 Bytes**
-- SHA-256: `E75FB0F50FFE815B848B641ADB5DFBFFBE41F1575ED2051AA8EA082D087372B9`
-- Build-Gates: Monitoring **8/8**, Control **9/9**, UAC-Wrapper **3/3**, Navigation **5/5**
+- Datei: `dist/TrackerRadar-0.5.0-alpha-portable.zip`
+- Groesse: **223.816 Bytes**
+- SHA-256: `23395ED9A141C773883B3EF4F31893AB96B91514F869FF29DB26BEBE8B024843`
+- Build-Gates: App **10/10**, Control **9/9**, Control-Wrapper **3/3**, Access-Scan **6/6**, Access-Wrapper **3/3**, Navigation **6/6**
 
-## Noch manuell zu pruefen
+## Sicherheits- und Datenschutzgrenzen
 
-Der isolierte Test verwendet ausschliesslich eine Kopie von Windows-`curl.exe` unter `data/firewall-test`. Mehrere Teststarts wurden vor der Regelanlage beendet, weil die sichtbare Windows-UAC-Abfrage nicht bestaetigt wurde. TrackerRadar meldete korrekt, dass nichts geaendert wurde. Danach wurden jeweils bestaetigt:
+- Der Dateizugriffs-Scan ist ein manueller Kurzscan, keine permanente Ueberwachung.
+- Die Ereignisse zeigen beobachtetes Oeffnen oder Durchsuchen; sie beweisen nicht automatisch Lesen, Kopieren, Hochladen oder boeswillige Absicht.
+- Programmpfade, Prozess-IDs und lokale Diagnoseprotokolle koennen maschinenspezifische Informationen enthalten und bleiben deshalb im ignorierten `data/`-Ordner.
+- TrackerRadar entschluesselt keine HTTPS-Inhalte.
+- Anbieter- und Zweckbezeichnungen fuer Netzwerkziele sind Heuristiken, kein Eigentums- oder Absichtsnachweis.
+- TrackerRadar ist kein Ersatz fuer Antivirus, EDR oder professionelle Incident Response.
 
-- keine Testregel vorhanden,
-- kein Change-Vault-Eintrag vorhanden,
-- keine Test-EXE aktiv.
+## Noch offene Release-Gates
 
-Vor einer oeffentlichen Alpha bleibt ein einmalig bestaetigter Block/Undo-Lauf erforderlich:
-
-1. erste UAC-Abfrage fuer die isolierte Testregel bestaetigen,
-2. Blockwirkung pruefen,
-3. zweite UAC-Abfrage fuer Undo bestaetigen,
-4. Wiederherstellung und fehlende Restregel bestaetigen.
+- Isolierten Firewall-Block-/Undo-Test mit beiden sichtbaren UAC-Bestaetigungen vollstaendig abschliessen
+- Clean-Checkout-Test auf einem zweiten Windows-PC
+- Lizenzentscheidung treffen
+- Rechte an allen Marken- und Bildassets abschliessend bestaetigen
+- Aktuelle Screenshots aus dem 0.5-Release-Build erstellen
+- Entscheidung zu Code Signing und Installer
 
 ## Bewertung
 
-Version 0.4 liefert die ersten echten Schutzaktionen, ohne TrackerRadar in eine schwere Security-Suite zu verwandeln. Gegenueber 0.3 steigt der private Speicher nur geringfuegig. Die Anwendung bleibt ohne Electron, Datenbank, Cloud, Hintergrunddienst oder eigenen Treiber.
+Version 0.5 beweist den zentralen Produktbaustein: TrackerRadar kann einen Windows-Prozess lokal einer sensiblen Ordnerkategorie zuordnen und die Ereignisse endnutzertauglich buendeln. Die Umsetzung bleibt bewusst schlank: kein Electron, keine Datenbank, keine Cloud, kein dauerhaftes ETW, kein Dienst und kein eigener Treiber.
 
-## Weiterhin nicht enthalten
-
-- Vollstaendige Datei-Leseueberwachung mit Prozesszuordnung
-- Kontrolle beliebiger vorhandener Autostarts ausserhalb eines Befunds
-- Automatische Tracker-Blocklisten
-- Windows-Hardening-Profile
-- Signierter Installer
-- Hintergrunddienst oder eigener Treiber
-- Schutzversprechen gegen jede Malware oder Backdoor
+Der naechste funktionale Schritt ist nicht mehr Datenerfassung, sondern eine vorsichtige Korrelation zwischen einem gebuendelten Dateizugriff und einer zeitnahen neuen externen Verbindung. Diese Korrelation darf nur als nachvollziehbare Evidenz dargestellt werden, nicht als automatische Malware-Behauptung.
