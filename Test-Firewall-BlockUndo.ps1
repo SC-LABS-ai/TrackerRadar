@@ -11,7 +11,11 @@ $changesRoot = Join-Path $data 'changes'
 $controlScript = Join-Path $root 'TrackerRadar.Control.ps1'
 $sourceCurl = Join-Path $env:WINDIR 'System32\curl.exe'
 $testExe = Join-Path $testRoot 'TrackerRadar-Curl-Test.exe'
-$testUrl = 'https://example.com/'
+$testUrls = @(
+    'https://www.google.com/generate_204',
+    'https://www.cloudflare.com/cdn-cgi/trace',
+    'https://example.com/'
+)
 if ([string]::IsNullOrWhiteSpace($ResultPath)) { $ResultPath = Join-Path $testRoot 'firewall-test-result.json' }
 
 foreach ($folder in @($data,$testRoot,$requestRoot,$changesRoot)) {
@@ -43,9 +47,34 @@ function Get-RuleState {
     return [pscustomobject]@{ Exists=($LASTEXITCODE -eq 0 -and -not $notFound); Text=$text }
 }
 
-function Invoke-TestCurl {
-    & $testExe '--silent' '--show-error' '--fail' '--max-time' '10' '--output' 'NUL' $testUrl 2>$null
-    return $LASTEXITCODE
+function Invoke-TestConnectivity {
+    param([int]$Attempts=1)
+    $results = @()
+    foreach ($url in $testUrls) {
+        $exitCodes = @()
+        for ($attempt = 0; $attempt -lt $Attempts; $attempt++) {
+            $previousErrorActionPreference = $ErrorActionPreference
+            $ErrorActionPreference = 'Continue'
+            try {
+                & $testExe '--silent' '--show-error' '--fail' '--max-time' '10' '--output' 'NUL' $url 2>$null
+                $curlExitCode = $LASTEXITCODE
+            } finally {
+                $ErrorActionPreference = $previousErrorActionPreference
+            }
+            $exitCodes += $curlExitCode
+            if ($attempt + 1 -lt $Attempts) { Start-Sleep -Milliseconds 250 }
+        }
+        $results += [pscustomobject]@{
+            Url = $url
+            ExitCodes = $exitCodes
+            Passed = (@($exitCodes | Where-Object { $_ -eq 0 }).Count -gt 0)
+        }
+    }
+    return [pscustomobject]@{
+        PassedCount = @($results | Where-Object Passed).Count
+        TotalCount = $results.Count
+        Results = $results
+    }
 }
 
 function Invoke-LocalHelperRequest {
@@ -105,32 +134,35 @@ $result = $null
 
 try {
     Copy-Item -LiteralPath $sourceCurl -Destination $testExe -Force
-    $preExit = Invoke-TestCurl
-    if ($preExit -ne 0) { throw "Ausgangsverbindung fehlgeschlagen (curl Exit $preExit)." }
+    $preConnectivity = Invoke-TestConnectivity -Attempts 2
+    if ($preConnectivity.PassedCount -lt 2) {
+        throw "Ausgangsverbindung instabil: Nur $($preConnectivity.PassedCount) von $($preConnectivity.TotalCount) Testzielen erreichbar."
+    }
 
     $apply = Invoke-ElevatedHelperRequest ([pscustomobject]@{ Action='BlockInternet'; ProgramPath=$testExe; ChangeId=$changeId }) ('apply-' + $changeId)
     if (-not [bool]$apply.Ok) { throw [string]$apply.Error }
     $ruleAfterApply = Get-RuleState $ruleName
-    $blockedExit = Invoke-TestCurl
+    $blockedConnectivity = Invoke-TestConnectivity -Attempts 1
     $duplicate = Invoke-LocalHelperRequest ([pscustomobject]@{ Action='BlockInternet'; ProgramPath=$testExe; ChangeId=('duplicate-' + [guid]::NewGuid().ToString('N')) }) ('duplicate-' + $changeId)
     $duplicatePrevented = (-not [bool]$duplicate.Ok -and [string]$duplicate.Error -match 'existiert bereits')
 
     $undo = Invoke-ElevatedHelperRequest ([pscustomobject]@{ Action='UndoChange'; ChangeId=$changeId }) ('undo-' + $changeId)
     if (-not [bool]$undo.Ok) { throw [string]$undo.Error }
     $ruleAfterUndo = Get-RuleState $ruleName
-    $postExit = Invoke-TestCurl
+    $postConnectivity = Invoke-TestConnectivity -Attempts 2
 
     $result = [pscustomobject]@{
         Version='0.5.5-alpha'; Timestamp=(Get-Date).ToString('o')
-        Passed=($ruleAfterApply.Exists -and $blockedExit -ne 0 -and $duplicatePrevented -and -not $ruleAfterUndo.Exists -and $postExit -eq 0)
-        PreConnectionPassed=($preExit -eq 0)
+        Passed=($ruleAfterApply.Exists -and $blockedConnectivity.PassedCount -eq 0 -and $duplicatePrevented -and -not $ruleAfterUndo.Exists -and $postConnectivity.PassedCount -ge 2)
+        PreConnectionPassed=($preConnectivity.PassedCount -ge 2)
+        PreConnectivity=$preConnectivity
         RuleCreatedAndVerified=$ruleAfterApply.Exists
-        ConnectionBlocked=($blockedExit -ne 0)
-        BlockedCurlExitCode=$blockedExit
+        ConnectionBlocked=($blockedConnectivity.PassedCount -eq 0)
+        BlockedConnectivity=$blockedConnectivity
         DuplicateRulePrevented=$duplicatePrevented
         RuleRemovedAndVerified=(-not $ruleAfterUndo.Exists)
-        ConnectionRestored=($postExit -eq 0)
-        RestoredCurlExitCode=$postExit
+        ConnectionRestored=($postConnectivity.PassedCount -ge 2)
+        RestoredConnectivity=$postConnectivity
         RemainingRule=$ruleAfterUndo.Exists
     }
 } catch {

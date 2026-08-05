@@ -23,13 +23,14 @@ All notable changes to TrackerRadar are documented here.
 ### Safety
 - A restore action is offered only when the exact TrackerRadar rule and its matching applied Change Vault record both exist
 - Rules without a safe rollback record are reported but are not automatically removed
-- No live firewall rule was created or removed during this safety pass
-- Read-only verification confirmed that Wispr Flow remained unblocked, with no TrackerRadar rule and an empty Change Vault
+- The Wispr Flow diagnosis remained read-only and confirmed no TrackerRadar rule and an empty Change Vault
+- The separate isolated proof used only a copied Windows `curl.exe` and removed its rule and test artifacts after completion
 
 ### Verified
 - Application core: 10/10 passed
 - Control helper including read-only block-state lookup: 10/10 passed
 - Six views, both languages and safe block/restore states: 38/38 passed
+- Isolated multi-endpoint firewall proof: exact rule created, three of three HTTPS targets blocked, duplicate rule rejected, rule removed, three of three targets restored, no residual rule or test artifact
 - Full regression working set after ten seconds: 179.6 MB
 - Full regression private memory after ten seconds: 159.9 MB
 - GUI errors: none

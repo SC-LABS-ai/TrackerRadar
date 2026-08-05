@@ -1,6 +1,6 @@
 # TrackerRadar Alpha - Status
 
-Stand: 2026-08-05, 15:05 Uhr Europe/Berlin
+Stand: 2026-08-05, 17:16 Uhr Europe/Berlin
 
 ## Ergebnis
 
@@ -27,13 +27,15 @@ Die vom Nutzer gemeldete Aktion wurde ausschliesslich read-only untersucht:
 - Change-Vault-Eintrag: **nicht vorhanden**
 - aktueller Zustand: **Wispr Flow ist nicht blockiert**
 
-Bei dieser Diagnose und beim 0.5.5-Safety-Pass wurde keine reale Firewall-Regel angelegt oder entfernt.
+Bei der initialen Wispr-Flow-Diagnose wurde keine reale Firewall-Regel angelegt oder entfernt. Der separate isolierte `curl.exe`-Test hat danach eine ausschliesslich fuer die Testkopie geltende Regel erfolgreich angelegt, die Verbindung zu drei neutralen HTTPS-Zielen blockiert und die Regel anschliessend vollstaendig entfernt.
 
 ## Verifizierte Funktionen
 
 - App-Kern: **10/10 PASS**
 - Control-Helper inklusive read-only Blockstatus: **10/10 PASS**
 - Control-UAC-Wrapper: **PASS**
+- isolierter Firewall-Block-/Freigabe-Test mit kopierter `curl.exe`: **PASS**
+- Regel erstellt und verifiziert, drei von drei Testzielen blockiert, doppelte Regel verhindert, Regel entfernt, drei von drei Testzielen wieder erreichbar, keine Restregel: **PASS**
 - Dateizugriffs-Parser und Datenschutzregeln: **6/6 PASS**
 - Dateizugriffs-UAC-Wrapper: **PASS**
 - Lokalisierung, Unicode und Speicherung: **8/8 PASS**
@@ -56,7 +58,6 @@ Das finale Paket wird durch `Build-Portable.ps1` nur erzeugt, wenn App, Control,
 
 ## Noch offene oeffentliche Release-Gates
 
-- isolierten Firewall-Block-/Undo-Test mit der kopierten `curl.exe` und beiden sichtbaren UAC-Bestaetigungen abschliessen
 - Portable-Paket auf einem zweiten Windows-PC testen
 - Rechte an Marken- und Bildassets abschliessend dokumentieren
 - aktuelle Screenshots von `0.5.5-alpha` erstellen
@@ -65,4 +66,4 @@ Das finale Paket wird durch `Build-Portable.ps1` nur erzeugt, wenn App, Control,
 
 ## Bewertung
 
-TrackerRadar `0.5.5-alpha` beseitigt die unklare Situation nach einem fehlgeschlagenen Blockversuch: Der Nutzer sieht den bestaetigten Regelzustand und erhaelt eine Freigabeoption nur fuer sicher zuordenbare TrackerRadar-Aenderungen. Der reale isolierte Firewall-Wirkungstest bleibt bewusst als separates Release-Gate offen.
+TrackerRadar `0.5.5-alpha` beseitigt die unklare Situation nach einem fehlgeschlagenen Blockversuch: Der Nutzer sieht den bestaetigten Regelzustand und erhaelt eine Freigabeoption nur fuer sicher zuordenbare TrackerRadar-Aenderungen. Der reale isolierte Firewall-Wirkungstest ist bestanden; offen bleiben nur der zweite Windows-PC, die Asset-Rechte, aktuelle Screenshots und die anschliessende GitHub-/Website-Freigabe.

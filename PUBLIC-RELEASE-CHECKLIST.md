@@ -16,7 +16,7 @@ TrackerRadar is prepared for version control but is not ready for a public relea
 - [x] Add isolated file and Registry disable/undo tests
 - [x] Verify the Activities block/restore toggle against the exact firewall-rule state and matching Change Vault record
 - [x] Confirm a failed Wispr Flow block attempt left no rule, no Change Vault record and no active block
-- [ ] Complete the prepared UAC firewall block-and-rollback test with the isolated copied `curl.exe` target
+- [x] Complete the prepared UAC firewall block-and-rollback test with the isolated copied `curl.exe` target
 - [ ] Run a clean-checkout test on a second Windows machine
 - [x] Confirm no usernames, local paths, scan results, tokens or secrets are tracked in the final commit candidate
 - [ ] Produce current screenshots from the release build
@@ -30,4 +30,4 @@ TrackerRadar is prepared for version control but is not ready for a public relea
 
 `0.5.5-alpha` is a local visibility and reversible-control prototype with a verified German and English interface, console-free standard launcher, fitted branding and a state-aware Activities control. The control offers restore only when the exact TrackerRadar firewall rule and its matching applied Change Vault record both exist. A failed block attempt is rechecked and clearly reports when no verified rule was created. The manual five-second access scan remains limited to process-to-folder-category association and automatic raw-trace cleanup.
 
-Public release remains blocked by the second-machine clean test, asset-rights verification, current post-0.5.5 screenshots and the isolated copied-`curl.exe` UAC firewall block/rollback proof.
+Public release remains blocked by the second-machine clean test, asset-rights verification and current post-0.5.5 screenshots. The isolated copied-`curl.exe` UAC firewall block/rollback proof passed with no residual rule or test artifact.

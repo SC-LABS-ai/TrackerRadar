@@ -82,7 +82,7 @@ The regression test covers:
 
 Machine-specific results are stored in the ignored `data/` directory.
 
-The isolated firewall block/undo proof remains available in `Test-Firewall-BlockUndo.ps1`. It uses only a copied Windows `curl.exe` target. The real firewall effect remains an open public-release gate until both visible UAC prompts are completed and the absence of a residual rule is confirmed.
+The isolated firewall block/undo proof in `Test-Firewall-BlockUndo.ps1` passed on 2026-08-05 using only a copied Windows `curl.exe` target. The exact outbound rule was created and verified, all three neutral HTTPS targets became unreachable, duplicate-rule creation was rejected, the matching Change Vault action restored access, all three targets became reachable again, and no residual rule, test executable or test change remained.
 
 ## Portable package
 
