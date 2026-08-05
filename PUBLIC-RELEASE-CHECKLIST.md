@@ -22,7 +22,7 @@ TrackerRadar is published as a clearly labelled public alpha. The remaining item
 - [ ] Produce current screenshots from the release build
 - [x] Create and verify the final 0.5.5 portable package and SHA-256 file
 - [x] Use a portable-only alpha release; installer and code signing are deferred to a later beta or Pro edition
-- [ ] Enable GitHub Private Vulnerability Reporting
+- [x] Enable GitHub Private Vulnerability Reporting
 - [x] Review README, privacy statement, security model and limitations for 0.5
 - [x] Create the public GitHub repository and add its remote after explicit approval
 

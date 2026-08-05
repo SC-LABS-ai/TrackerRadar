@@ -31,7 +31,7 @@ TrackerRadar is an early local alpha and is not a replacement for antivirus, EDR
 
 ## Reporting a vulnerability
 
-When the public GitHub repository is enabled, use GitHub Private Vulnerability Reporting. Do not publish exploit details, personal scan data or machine-specific paths in a public issue.
+Use GitHub Private Vulnerability Reporting in the public repository for security reports. Do not publish exploit details, personal scan data or machine-specific paths in a public issue.
 
 If private reporting is not yet available, open a minimal issue requesting a private contact channel without disclosing technical exploit details.
 

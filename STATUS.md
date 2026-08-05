@@ -61,7 +61,6 @@ Das finale Paket wird durch `Build-Portable.ps1` nur erzeugt, wenn App, Control,
 - Portable-Paket auf einem zweiten Windows-PC testen
 - Rechte an Marken- und Bildassets abschliessend dokumentieren
 - aktuelle Screenshots von `0.5.5-alpha` erstellen
-- GitHub Private Vulnerability Reporting aktivieren
 
 ## Bewertung
 
