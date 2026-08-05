@@ -16,7 +16,7 @@ if ($SelfTest) {
     )
     $result = [pscustomobject]@{
         Product='TrackerRadar Elevated Wrapper'
-        Version='0.5.3-alpha'
+        Version='0.5.4-alpha'
         Passed=@($checks | Where-Object Passed).Count
         Failed=@($checks | Where-Object { -not $_.Passed }).Count
         Checks=$checks

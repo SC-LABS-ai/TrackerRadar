@@ -8,6 +8,26 @@ All notable changes to TrackerRadar are documented here.
 - Richer operation classification without overstating intent
 - Compiled Windows build and signed installer
 
+## [0.5.4-alpha] - 2026-08-05
+
+### Changed
+- Removed the cramped MalwareRadar and PrivacyRadar buttons from the sidebar privacy card
+- Kept `MORE SC LABS APPS` and replaced the buttons with a single readable `sclabs.uk` text link
+- Moved the MalwareRadar and PrivacyRadar links into the footer after the TrackerRadar version label
+- Inset the complete footer group from the right edge
+- Matched the sidebar logo container background to the measured logo background and increased the logo scale for a cleaner filled appearance
+
+### Safety
+- UI-only polish: monitoring, file-access scanning, firewall control, startup control, rollback, localization and launcher behavior are unchanged
+- All external links remain fixed HTTPS allowlisted destinations and open only after a deliberate click
+
+### Verified
+- Application core: 10/10 passed
+- Six views, both languages, logo fit, sidebar website link and footer links: 31/31 passed
+- Real WPF candidate launch: passed with no GUI errors
+- Candidate working set after ten seconds: 181.8 MB
+- Candidate private memory after ten seconds: 161.8 MB
+
 ## [0.5.3-alpha] - 2026-08-05
 
 ### Added

@@ -1,33 +1,29 @@
 # TrackerRadar Alpha - Status
 
-Stand: 2026-08-05, 12:45 Uhr Europe/Berlin
+Stand: 2026-08-05, 14:21 Uhr Europe/Berlin
 
 ## Ergebnis
 
-TrackerRadar `0.5.3-alpha` ist als portable, lokale Windows-Anwendung fuer die interne Alpha-Nutzung fertiggestellt. Netzwerktransparenz, reversibler Safe Control, manueller Datei-/Ordnerzugriffs-Kurzscan, Deutsch/Englisch, versteckter Konsolenstart und lokale Berichte funktionieren im geprueften Windows-11-Stand.
+TrackerRadar `0.5.4-alpha` ist als portable, lokale Windows-Anwendung fertiggestellt. Dieser Pass war ausschliesslich ein finaler UI-Polish fuer Logo, Sidebar-Link und Footer. Monitoring, Dateizugriff, Firewall, Autostart, Change Vault, Sprache und Launcherlogik wurden nicht umgebaut.
 
 - Standardstart: `Start-TrackerRadar.vbs`
 - kompatibler Fallback: `Start-TrackerRadar.cmd`
 - Installation: nicht erforderlich
 - Sprachen: Deutsch und English
-- Hauptoberflaeche: ohne dauerhafte Administratorrechte
 - PowerShell-Konsole beim Standardstart: verborgen
 - Cloud und Produkttelemetrie: keine
 - Hintergrunddienst oder eigener Treiber: keiner
 - Lizenz: SC LABS Proprietary Freeware
 
-## Neu in 0.5.3
+## Neu in 0.5.4
 
-- Windows-Script-Host-Launcher startet TrackerRadar ohne sichtbares PowerShell-Fenster.
-- Das TrackerRadar-WPF-Fenster bleibt normal sichtbar.
-- SC-LABS-Logo und TrackerRadar-Logo fuellen ihre abgerundeten Rahmen sauberer aus.
-- Die Seitenleiste enthaelt kompakte Verweise auf:
-  - `https://sclabs.uk/products/malwareradar/`
-  - `https://sclabs.uk/products/privacyradar/`
-- Die Webseiten werden ausschliesslich nach einem bewussten Klick im Standardbrowser geoeffnet.
-- Kein eingebetteter Browser, kein Vorladen, kein Hintergrundaufruf und keine Downloadausfuehrung.
-- Proprietaere Freeware-Lizenz festgelegt; Weiterverteilung, Rebranding und Verkauf bleiben ohne Zustimmung untersagt.
-- Eine spaetere kommerzielle oder Pro-Version bleibt ausdruecklich vorbehalten.
+- Die engen MalwareRadar- und PrivacyRadar-Buttons wurden aus dem gruenen Sidebar-Bereich entfernt.
+- `MORE SC LABS APPS` bleibt erhalten; darunter steht jetzt der voll lesbare Link `sclabs.uk`.
+- MalwareRadar und PrivacyRadar stehen als gut lesbare Akzentlinks hinter der Versionsanzeige im Footer.
+- Der gesamte Footer-Block ist zusaetzlich vom rechten Rand eingerueckt.
+- Der gemessene Logo-Hintergrund `#00020A` wird im Rahmen verwendet, damit Bild und Container optisch verschmelzen.
+- SC-LABS-Logo und TrackerRadar-Logo wurden innerhalb ihrer bestehenden abgerundeten Rahmen vergroessert.
+- Alle drei externen Ziele sind fest allowlisted und werden nur nach bewusstem Klick geoeffnet.
 
 ## Verifizierte Funktionen
 
@@ -37,63 +33,45 @@ TrackerRadar `0.5.3-alpha` ist als portable, lokale Windows-Anwendung fuer die i
 - Dateizugriffs-Parser und Datenschutzregeln: **6/6 PASS**
 - Dateizugriffs-UAC-Wrapper: **3/3 PASS**
 - Lokalisierung, Unicode und Speicherung: **8/8 PASS**
-- deutsche und englische Sprachschluessel: **146/146**
 - versteckter Launcher und sichtbares App-Fenster: **7/7 PASS**
-- sechs Ansichten, beide Sprachen, Logo-Fit und Produktlinks: **27/27 PASS**
-- GUI-Start: **PASS**
+- sechs Ansichten, beide Sprachen, Logo-Fit, Sidebar-Link und Footer-Links: **31/31 PASS**
+- deutsche und englische Sprachschluessel: **146/146**
 - GUI-Fehlerausgabe: leer
 
 ## Letzter vollstaendiger Regressionstest
 
-- Working Set nach 10 Sekunden: **179,7 MB**
-- privater Speicher nach 10 Sekunden: **160,5 MB**
-- CPU-Zeit nach 10 Sekunden: **4,75 Sekunden**
+- Working Set nach 10 Sekunden: **179,4 MB**
+- privater Speicher nach 10 Sekunden: **159,0 MB**
+- CPU-Zeit nach 10 Sekunden: **3,91 Sekunden**
 - Ziel unter 180 MB Working Set: **PASS**
 - Ziel unter 200 MB Working Set: **PASS**
-- GUI-Fehler: **keine**
 
 ## Portable-Paket
 
-- Datei: `dist/TrackerRadar-0.5.3-alpha-portable.zip`
-- Groesse: **242.045 Bytes**
-- SHA-256: `4F295B691624225100D06CC5EF7536147B262BF913273CF2CEE54A3358782C82`
+- Datei: `dist/TrackerRadar-0.5.4-alpha-portable.zip`
+- Groesse: **242.468 Bytes**
+- SHA-256: `3DE967B311D5B4EDF06F009B201BFEFF0E323FF7F2B1154CC9D55EE9E63235F0`
 - separate Hashdatei stimmt ueberein: **PASS**
 - frische ZIP-Entpackung: **PASS**
 - 17 Pflichtdateien vorhanden: **PASS**
-- App-Selbsttest aus ZIP: **PASS**
-- Lokalisierungstest aus ZIP: **PASS**
-- versteckter Launcher aus ZIP: **PASS**
-- 27 UI-Pruefungen aus ZIP: **PASS**
-- `LICENSE.md`, VBS-Launcher und beide Sprachdateien enthalten: **PASS**
+- App-, Lokalisierungs-, Launcher- und UI-Test aus ZIP: **PASS**
 
 ## Datenschutz und externe Links
 
-- keine Cloud-Uebersetzung
-- kein Benutzerkonto
-- keine Produkttelemetrie
-- keine Uebermittlung der Sprachwahl
+- `sclabs.uk` wird nur nach Klick aus der Sidebar geoeffnet.
+- MalwareRadar und PrivacyRadar werden nur nach Klick aus dem Footer geoeffnet.
+- kein eingebetteter Browser, kein Vorladen und kein Hintergrundzugriff
 - keine Dateiinhalte oder einzelnen Dateinamen im zusammengefassten Dateizugriffsergebnis
-- MalwareRadar- und PrivacyRadar-Seiten werden nur nach einem bewussten Klick geoeffnet
-- TrackerRadar laedt keine Inhalte dieser Seiten im Hintergrund
-
-## Produktgrenzen
-
-- Netzwerkansichten sind Momentaufnahmen aktiver TCP-Verbindungen und kein vollstaendiger Paketmitschnitt.
-- Anbieter- und Zweckbezeichnungen bleiben erklaerende Heuristiken.
-- `Unbekannter Dienst` beziehungsweise `Unknown service` ist keine Risikobewertung.
-- Der Dateizugriffs-Scan ist ein manueller Fuenf-Sekunden-Kurzscan und keine Dauerueberwachung.
-- Beobachtete Datei-Ereignisse beweisen nicht automatisch Lesen, Kopieren, Hochladen oder schaedliche Absicht.
-- TrackerRadar ist kein Ersatz fuer Antivirus, EDR oder professionelle Incident Response.
 
 ## Noch offene oeffentliche Release-Gates
 
 - isolierten Firewall-Block-/Undo-Test mit beiden sichtbaren UAC-Bestaetigungen abschliessen
-- Clean-Checkout beziehungsweise Portable-Test auf einem zweiten Windows-PC durchfuehren
+- Portable-Paket auf einem zweiten Windows-PC testen
 - Rechte an allen Marken- und Bildassets abschliessend bestaetigen
-- aktuelle Screenshots der finalen Version 0.5.3 erstellen
+- aktuelle Screenshots der Version 0.5.4 erstellen
 - GitHub Private Vulnerability Reporting nach Erstellung des oeffentlichen Repositories aktivieren
 - GitHub-Remote und oeffentliche Veroeffentlichung erst nach ausdruecklicher Freigabe einrichten
 
 ## Bewertung
 
-TrackerRadar `0.5.3-alpha` ist ein stabiler, intern veroeffentlichungsfaehiger Portable-Alpha-Stand. Der Funktionsumfang bleibt bewusst schlank: lokale Transparenz, verstaendliche Evidenz, wenige bestaetigungspflichtige und reversible Aktionen. UI, Sprachwahl, Konsolenstart, Produktverweise und Lizenzierung sind abgeschlossen. Der reale isolierte Firewall-Endtest und ein zweites Windows-System bleiben vor einer oeffentlichen Downloadfreigabe offen.
+TrackerRadar `0.5.4-alpha` ist der abgeschlossene lokale UI- und Portable-Stand. Die von der Nutzerpruefung gemeldeten Punkte sind umgesetzt, ohne die bestaetigte Produktfunktion zu veraendern.

@@ -16,7 +16,7 @@ TrackerRadar is designed as a local-first Windows application.
 
 ## External product links
 
-The sidebar contains explicit links to the SC LABS MalwareRadar and PrivacyRadar product pages. TrackerRadar does not preload those pages, embed a browser or contact the website in the background. A normal external browser request occurs only after the user selects one of the links.
+The sidebar contains a compact `sclabs.uk` link and the footer contains explicit MalwareRadar and PrivacyRadar product links. TrackerRadar does not preload those pages, embed a browser or contact the website in the background. A normal external browser request occurs only after the user selects one of the links.
 
 ## File-access short scan
 

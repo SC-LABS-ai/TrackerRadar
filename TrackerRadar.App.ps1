@@ -7,7 +7,7 @@ param(
 Set-StrictMode -Version 2.0
 $ErrorActionPreference = 'Stop'
 
-$script:Version = '0.5.3-alpha'
+$script:Version = '0.5.4-alpha'
 $script:Root = Split-Path -Parent $MyInvocation.MyCommand.Path
 if ((Split-Path -Leaf $script:Root) -eq '_development') { $script:Root = Split-Path -Parent $script:Root }
 $script:Data = Join-Path $script:Root 'data'
@@ -703,7 +703,7 @@ Add-Type -AssemblyName PresentationFramework, PresentationCore, WindowsBase
 [xml]$xaml = @'
 <Window xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="TrackerRadar 0.5.3 Alpha | SC LABS" Width="1180" Height="720" MinWidth="960" MinHeight="620" UseLayoutRounding="True" SnapsToDevicePixels="True"
+        Title="TrackerRadar 0.5.4 Alpha | SC LABS" Width="1180" Height="720" MinWidth="960" MinHeight="620" UseLayoutRounding="True" SnapsToDevicePixels="True"
         WindowStartupLocation="CenterScreen" Background="#071018" Foreground="#ECF3F7"
         FontFamily="Segoe UI" FontSize="14">
     <Window.Resources>
@@ -755,15 +755,6 @@ Add-Type -AssemblyName PresentationFramework, PresentationCore, WindowsBase
                     </ControlTemplate>
                 </Setter.Value>
             </Setter>
-        </Style>
-        <Style x:Key="ProductLinkButton" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
-            <Setter Property="Height" Value="29"/>
-            <Setter Property="Padding" Value="5,4"/>
-            <Setter Property="FontSize" Value="10"/>
-            <Setter Property="FontWeight" Value="SemiBold"/>
-            <Setter Property="Background" Value="#0B1924"/>
-            <Setter Property="BorderBrush" Value="#245161"/>
-            <Setter Property="Foreground" Value="#9CC5D1"/>
         </Style>
         <Style x:Key="LanguageComboBoxItem" TargetType="ComboBoxItem">
             <Setter Property="Foreground" Value="#DCE8ED"/>
@@ -870,10 +861,10 @@ Add-Type -AssemblyName PresentationFramework, PresentationCore, WindowsBase
                 <Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
                 <StackPanel>
                     <StackPanel Orientation="Horizontal">
-                        <Border Width="48" Height="48" CornerRadius="10" Background="#0B1924" BorderBrush="#284657" BorderThickness="1" ClipToBounds="True"><Image x:Name="ScLabsLogo" Stretch="Uniform" RenderTransformOrigin="0.5,0.5"><Image.RenderTransform><ScaleTransform ScaleX="1.08" ScaleY="1.08"/></Image.RenderTransform></Image></Border>
+                        <Border Width="48" Height="48" CornerRadius="10" Background="#00020A" BorderBrush="#234455" BorderThickness="1" ClipToBounds="True"><Image x:Name="ScLabsLogo" Stretch="Uniform" SnapsToDevicePixels="True" RenderTransformOrigin="0.5,0.5"><Image.RenderTransform><ScaleTransform ScaleX="1.12" ScaleY="1.12"/></Image.RenderTransform></Image></Border>
                         <StackPanel Margin="10,6,0,0"><TextBlock Text="SC LABS" FontSize="16" FontWeight="Bold"/><TextBlock Text="PRODUCT SERIES" FontSize="9" Foreground="#718B99"/></StackPanel>
                     </StackPanel>
-                    <Border Margin="0,20,0,0" Height="132" CornerRadius="12" Background="#06101A" BorderBrush="#234455" BorderThickness="1" ClipToBounds="True"><Image x:Name="TrackerRadarLogo" Stretch="Uniform" RenderTransformOrigin="0.5,0.5"><Image.RenderTransform><ScaleTransform ScaleX="1.13" ScaleY="1.13"/></Image.RenderTransform></Image></Border>
+                    <Border Margin="0,20,0,0" Height="132" CornerRadius="12" Background="#00020A" BorderBrush="#234455" BorderThickness="1" ClipToBounds="True"><Image x:Name="TrackerRadarLogo" Stretch="Uniform" SnapsToDevicePixels="True" RenderTransformOrigin="0.5,0.5"><Image.RenderTransform><ScaleTransform ScaleX="1.20" ScaleY="1.20"/></Image.RenderTransform></Image></Border>
                     <TextBlock x:Name="TaglineText" Text="Sieh, was Programme wirklich tun." Margin="0,10,0,0" Foreground="#8EA2AF" TextWrapping="Wrap"/>
                 </StackPanel>
                 <StackPanel Grid.Row="1" Margin="0,30,0,0">
@@ -888,12 +879,8 @@ Add-Type -AssemblyName PresentationFramework, PresentationCore, WindowsBase
                     <StackPanel>
                         <TextBlock x:Name="PrivacyTitleText" Text="LOKAL UND PRIVAT" Foreground="{StaticResource Green}" FontWeight="SemiBold"/>
                         <TextBlock x:Name="PrivacyBodyText" Text="Keine Cloud. Keine Telemetrie." Foreground="#8FA8A0" Margin="0,4,0,0" FontSize="12"/>
-                        <TextBlock x:Name="MoreProductsTitleText" Text="WEITERE SC LABS APPS" Foreground="#718B99" Margin="0,10,0,5" FontSize="9" FontWeight="SemiBold"/>
-                        <Grid>
-                            <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="6"/><ColumnDefinition Width="*"/></Grid.ColumnDefinitions>
-                            <Button x:Name="MalwareRadarLinkButton" Grid.Column="0" Style="{StaticResource ProductLinkButton}" Content="MalwareRadar" Tag="https://sclabs.uk/products/malwareradar/" ToolTip="https://sclabs.uk/products/malwareradar/"/>
-                            <Button x:Name="PrivacyRadarLinkButton" Grid.Column="2" Style="{StaticResource ProductLinkButton}" Content="PrivacyRadar" Tag="https://sclabs.uk/products/privacyradar/" ToolTip="https://sclabs.uk/products/privacyradar/"/>
-                        </Grid>
+                        <TextBlock x:Name="MoreProductsTitleText" Text="WEITERE SC LABS APPS" Foreground="#718B99" Margin="0,10,0,3" FontSize="9" FontWeight="SemiBold"/>
+                        <TextBlock x:Name="ScLabsWebsiteLinkText" Text="sclabs.uk" Foreground="#49C8D8" FontSize="12" FontWeight="SemiBold" TextDecorations="Underline" Cursor="Hand" Tag="https://sclabs.uk/" ToolTip="https://sclabs.uk/"/>
                     </StackPanel>
                 </Border>
             </Grid>
@@ -981,7 +968,17 @@ Add-Type -AssemblyName PresentationFramework, PresentationCore, WindowsBase
                 </Border>
             </Grid>
 
-            <Grid Grid.Row="2" Margin="0,13,0,0"><Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions><TextBlock x:Name="StatusText" Text="Bereit" Foreground="#8DA1AD"/><TextBlock Grid.Column="1" Text="TrackerRadar 0.5.3 Alpha | SC LABS" Foreground="#627985"/></Grid>
+            <Grid Grid.Row="2" Margin="0,13,0,0">
+                <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+                <TextBlock x:Name="StatusText" Text="Bereit" Foreground="#8DA1AD" TextTrimming="CharacterEllipsis"/>
+                <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,0,12,0">
+                    <TextBlock x:Name="FooterVersionText" Text="TrackerRadar 0.5.4 Alpha | SC LABS" Foreground="#627985" FontSize="12" VerticalAlignment="Center"/>
+                    <TextBlock Text="  |  " Foreground="#36515F" FontSize="12" VerticalAlignment="Center"/>
+                    <TextBlock x:Name="FooterMalwareRadarLinkText" Text="MalwareRadar" Foreground="#49C8D8" FontSize="12" FontWeight="SemiBold" TextDecorations="Underline" Cursor="Hand" VerticalAlignment="Center" Tag="https://sclabs.uk/products/malwareradar/" ToolTip="https://sclabs.uk/products/malwareradar/"/>
+                    <TextBlock Text="  |  " Foreground="#36515F" FontSize="12" VerticalAlignment="Center"/>
+                    <TextBlock x:Name="FooterPrivacyRadarLinkText" Text="PrivacyRadar" Foreground="#49C8D8" FontSize="12" FontWeight="SemiBold" TextDecorations="Underline" Cursor="Hand" VerticalAlignment="Center" Tag="https://sclabs.uk/products/privacyradar/" ToolTip="https://sclabs.uk/products/privacyradar/"/>
+                </StackPanel>
+            </Grid>
         </Grid>
     </Grid>
 </Window>
@@ -1033,8 +1030,10 @@ $taglineText = $window.FindName('TaglineText')
 $privacyTitleText = $window.FindName('PrivacyTitleText')
 $privacyBodyText = $window.FindName('PrivacyBodyText')
 $moreProductsTitleText = $window.FindName('MoreProductsTitleText')
-$malwareRadarLinkButton = $window.FindName('MalwareRadarLinkButton')
-$privacyRadarLinkButton = $window.FindName('PrivacyRadarLinkButton')
+$scLabsWebsiteLinkText = $window.FindName('ScLabsWebsiteLinkText')
+$footerVersionText = $window.FindName('FooterVersionText')
+$footerMalwareRadarLinkText = $window.FindName('FooterMalwareRadarLinkText')
+$footerPrivacyRadarLinkText = $window.FindName('FooterPrivacyRadarLinkText')
 $overviewAppsLabel = $window.FindName('OverviewAppsLabel')
 $overviewNewLabel = $window.FindName('OverviewNewLabel')
 $overviewFindingsLabel = $window.FindName('OverviewFindingsLabel')
@@ -1074,6 +1073,7 @@ function Set-GridHeaders {
 
 function Apply-Language {
     $window.Title = "TrackerRadar $script:Version | SC LABS"
+    $footerVersionText.Text = "TrackerRadar $script:Version | SC LABS"
     $taglineText.Text = Get-Text 'Tagline'
     $navOverview.Content = Get-Text 'NavOverview'
     $navActivities.Content = Get-Text 'NavActivities'
@@ -1084,8 +1084,6 @@ function Apply-Language {
     $privacyTitleText.Text = Get-Text 'PrivacyTitle'
     $privacyBodyText.Text = Get-Text 'PrivacyBody'
     $moreProductsTitleText.Text = Get-Text 'MoreProductsTitle'
-    $malwareRadarLinkButton.Content = Get-Text 'MalwareRadarLink'
-    $privacyRadarLinkButton.Content = Get-Text 'PrivacyRadarLink'
     $scanButton.Content = Get-Text 'ScanNow'
     $overviewAppsLabel.Text = Get-Text 'OverviewApps'
     $overviewNewLabel.Text = Get-Text 'OverviewNew'
@@ -1346,17 +1344,23 @@ $languageSelector.Add_SelectionChanged({
     $selected = $languageSelector.SelectedItem
     if ($selected -and [string]$selected.Tag -in @('de','en')) { Set-Language -Language ([string]$selected.Tag) -Save $true }
 })
-function Open-ScLabsProductPage {
+function Open-ScLabsPage {
     param([Parameter(Mandatory)][string]$Url)
-    if ($Url -notmatch '^https://sclabs\.uk/products/(malwareradar|privacyradar)/$') { return }
+    $allowedUrls = @(
+        'https://sclabs.uk/',
+        'https://sclabs.uk/products/malwareradar/',
+        'https://sclabs.uk/products/privacyradar/'
+    )
+    if ($Url -notin $allowedUrls) { return }
     try {
         Start-Process -FilePath $Url
     } catch {
         [System.Windows.MessageBox]::Show((Format-Text 'ExternalLinkError' @($Url)), (Get-Text 'ExternalLinkErrorTitle'), 'OK', 'Error') | Out-Null
     }
 }
-$malwareRadarLinkButton.Add_Click({ Open-ScLabsProductPage -Url ([string]$malwareRadarLinkButton.Tag) })
-$privacyRadarLinkButton.Add_Click({ Open-ScLabsProductPage -Url ([string]$privacyRadarLinkButton.Tag) })
+$scLabsWebsiteLinkText.Add_MouseLeftButtonUp({ Open-ScLabsPage -Url ([string]$scLabsWebsiteLinkText.Tag) })
+$footerMalwareRadarLinkText.Add_MouseLeftButtonUp({ Open-ScLabsPage -Url ([string]$footerMalwareRadarLinkText.Tag) })
+$footerPrivacyRadarLinkText.Add_MouseLeftButtonUp({ Open-ScLabsPage -Url ([string]$footerPrivacyRadarLinkText.Tag) })
 $navOverview.Add_Click({ Set-View 'Overview' })
 $navActivities.Add_Click({ Set-View 'Activities' })
 $navFindings.Add_Click({ Set-View 'Findings' })
@@ -1451,10 +1455,12 @@ if ($UiSmokeTest) {
         $results += [pscustomobject]@{ Type='UiStyle'; Name='language-template'; Passed=($null -ne $languageSelector.Template); Detail=if ($null -ne $languageSelector.Template) { 'custom template loaded' } else { 'missing template' } }
         $results += [pscustomobject]@{ Type='UiStyle'; Name='language-height'; Passed=([double]$languageSelector.Height -eq 52); Detail=[string]$languageSelector.Height }
         $results += [pscustomobject]@{ Type='UiStyle'; Name='scan-height'; Passed=([double]$scanButton.Height -eq 52); Detail=[string]$scanButton.Height }
-        $results += [pscustomobject]@{ Type='UiStyle'; Name='sclabs-logo-scale'; Passed=([double]$scLabsLogo.RenderTransform.ScaleX -eq 1.08); Detail=[string]$scLabsLogo.RenderTransform.ScaleX }
-        $results += [pscustomobject]@{ Type='UiStyle'; Name='trackerradar-logo-scale'; Passed=([double]$trackerRadarLogo.RenderTransform.ScaleX -eq 1.13); Detail=[string]$trackerRadarLogo.RenderTransform.ScaleX }
-        $results += [pscustomobject]@{ Type='ExternalLink'; Name='malwareradar-url'; Passed=([string]$malwareRadarLinkButton.Tag -eq 'https://sclabs.uk/products/malwareradar/'); Detail=[string]$malwareRadarLinkButton.Tag }
-        $results += [pscustomobject]@{ Type='ExternalLink'; Name='privacyradar-url'; Passed=([string]$privacyRadarLinkButton.Tag -eq 'https://sclabs.uk/products/privacyradar/'); Detail=[string]$privacyRadarLinkButton.Tag }
+        $results += [pscustomobject]@{ Type='UiStyle'; Name='sclabs-logo-scale'; Passed=([double]$scLabsLogo.RenderTransform.ScaleX -eq 1.12); Detail=[string]$scLabsLogo.RenderTransform.ScaleX }
+        $results += [pscustomobject]@{ Type='UiStyle'; Name='trackerradar-logo-scale'; Passed=([double]$trackerRadarLogo.RenderTransform.ScaleX -eq 1.20); Detail=[string]$trackerRadarLogo.RenderTransform.ScaleX }
+        $results += [pscustomobject]@{ Type='ExternalLink'; Name='sclabs-url'; Passed=([string]$scLabsWebsiteLinkText.Tag -eq 'https://sclabs.uk/'); Detail=[string]$scLabsWebsiteLinkText.Tag }
+        $results += [pscustomobject]@{ Type='ExternalLink'; Name='malwareradar-url'; Passed=([string]$footerMalwareRadarLinkText.Tag -eq 'https://sclabs.uk/products/malwareradar/'); Detail=[string]$footerMalwareRadarLinkText.Tag }
+        $results += [pscustomobject]@{ Type='ExternalLink'; Name='privacyradar-url'; Passed=([string]$footerPrivacyRadarLinkText.Tag -eq 'https://sclabs.uk/products/privacyradar/'); Detail=[string]$footerPrivacyRadarLinkText.Tag }
+        $results += [pscustomobject]@{ Type='Footer'; Name='version-inset'; Passed=([double]$footerVersionText.Margin.Right -eq 0 -and [double]$footerVersionText.FontSize -eq 12); Detail=[string]$footerVersionText.Text }
         $originalLanguage = $script:Language
         foreach ($language in @('de','en')) {
             Set-Language -Language $language -Save $false
@@ -1463,15 +1469,14 @@ if ($UiSmokeTest) {
             $expectedUnknown = if ($language -eq 'en') { 'Unknown service' } else { [string](Get-Text 'UnknownService') }
             $expectedAccess = if ($language -eq 'en') { 'Start 5-second scan' } else { [string](Get-Text 'AccessStart') }
             $expectedMoreProducts = [string](Get-Text 'MoreProductsTitle')
-            $expectedMalwareLink = [string](Get-Text 'MalwareRadarLink')
-            $expectedPrivacyLink = [string](Get-Text 'PrivacyRadarLink')
             $results += [pscustomobject]@{ Type='Language'; Name="$language-navigation"; Passed=([string]$navOverview.Content -eq $expectedOverview); Detail=[string]$navOverview.Content }
             $results += [pscustomobject]@{ Type='Language'; Name="$language-provider-header"; Passed=([string]$activityGrid.Columns[2].Header -eq $expectedProvider); Detail=[string]$activityGrid.Columns[2].Header }
             $results += [pscustomobject]@{ Type='Language'; Name="$language-unknown-provider"; Passed=((Convert-DisplayText 'Unbekannter Dienst') -eq $expectedUnknown); Detail=(Convert-DisplayText 'Unbekannter Dienst') }
             $results += [pscustomobject]@{ Type='Language'; Name="$language-access-button"; Passed=([string]$accessScanButton.Content -eq $expectedAccess); Detail=[string]$accessScanButton.Content }
             $results += [pscustomobject]@{ Type='Language'; Name="$language-related-title"; Passed=([string]$moreProductsTitleText.Text -eq $expectedMoreProducts); Detail=[string]$moreProductsTitleText.Text }
-            $results += [pscustomobject]@{ Type='Language'; Name="$language-malwareradar-link"; Passed=([string]$malwareRadarLinkButton.Content -eq $expectedMalwareLink); Detail=[string]$malwareRadarLinkButton.Content }
-            $results += [pscustomobject]@{ Type='Language'; Name="$language-privacyradar-link"; Passed=([string]$privacyRadarLinkButton.Content -eq $expectedPrivacyLink); Detail=[string]$privacyRadarLinkButton.Content }
+            $results += [pscustomobject]@{ Type='Language'; Name="$language-sclabs-link"; Passed=([string]$scLabsWebsiteLinkText.Text -eq 'sclabs.uk'); Detail=[string]$scLabsWebsiteLinkText.Text }
+            $results += [pscustomobject]@{ Type='Footer'; Name="$language-malwareradar-link"; Passed=([string]$footerMalwareRadarLinkText.Text -eq 'MalwareRadar'); Detail=[string]$footerMalwareRadarLinkText.Text }
+            $results += [pscustomobject]@{ Type='Footer'; Name="$language-privacyradar-link"; Passed=([string]$footerPrivacyRadarLinkText.Text -eq 'PrivacyRadar'); Detail=[string]$footerPrivacyRadarLinkText.Text }
         }
         Set-Language -Language $originalLanguage -Save $false
         $passed = @($results | Where-Object { $_.Passed }).Count

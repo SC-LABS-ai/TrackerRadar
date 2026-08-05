@@ -10,7 +10,7 @@ TrackerRadar shows which applications maintain external TCP connections, where t
 
 ## Status
 
-**Version:** `0.5.3-alpha`
+**Version:** `0.5.4-alpha`
 
 **State:** local visibility and safe-control prototype, not a complete security product
 
@@ -29,7 +29,7 @@ TrackerRadar shows which applications maintain external TCP connections, where t
 - Use a rounded dark-theme language selector matched to the primary button palette
 - Fit the SC LABS and TrackerRadar marks cleanly into their rounded sidebar frames
 - Remember the selected language in the local ignored `data/ui-settings.json` file
-- Offer explicit links to the MalwareRadar and PrivacyRadar product pages; no website is contacted until the user clicks
+- Show `sclabs.uk` as a compact sidebar link and place MalwareRadar and PrivacyRadar links in the footer; no website is contacted until the user clicks
 - Run an explicitly started five-second file-access scan for Documents, Desktop, Downloads, OneDrive, Edge profiles and Chrome profiles
 - Group file-access events by process, PID, folder category and observed operation
 - Store no document contents and no individual file names in the access-scan result
@@ -74,7 +74,7 @@ The regression test covers:
 - file-access UAC wrapper: 3 checks
 - localization files, Unicode and persistence: 8 checks
 - hidden launcher and visible-window verification: 7 checks
-- bilingual UI, logo fit, product links and navigation: 27 checks
+- bilingual UI, logo fit, sidebar website link, footer product links and navigation: 31 checks
 - WPF launch, GUI errors and memory usage
 
 Machine-specific results are stored in the ignored `data/` directory.
