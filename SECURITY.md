@@ -9,11 +9,14 @@ TrackerRadar is an early local alpha and is not a replacement for antivirus, EDR
 - Firewall and protected startup actions require explicit confirmation and a visible Windows UAC prompt.
 - The control helper accepts local request files only and does not open a network port.
 - Supported control actions write rollback information to the local Change Vault before modifying Windows.
+- The Activities control reads the exact TrackerRadar firewall-rule state before offering block or restore.
+- Restore is offered only when the exact TrackerRadar rule and its matching applied Change Vault record both exist.
+- A rule without a matching safe rollback record is not removed automatically.
 - The current alpha only supports outbound firewall blocking and selected startup disable/undo operations.
 
 ## External link model
 
-- TrackerRadar contains only two fixed HTTPS product links: MalwareRadar and PrivacyRadar on `sclabs.uk`.
+- TrackerRadar contains three fixed SC LABS HTTPS destinations: the main website plus the MalwareRadar and PrivacyRadar product pages.
 - Links open in the user's default browser only after an explicit click.
 - TrackerRadar does not embed a browser, execute downloaded content or contact those pages in the background.
 

@@ -76,6 +76,6 @@ try {
 }
 
 $passed=@($checks|Where-Object {$_.Passed}).Count
-$result=[pscustomobject]@{Product='TrackerRadar Launcher';Version='0.5.4-alpha';Passed=$passed;Failed=($checks.Count-$passed);Checks=$checks}
+$result=[pscustomobject]@{Product='TrackerRadar Launcher';Version='0.5.5-alpha';Passed=$passed;Failed=($checks.Count-$passed);Checks=$checks}
 $result|ConvertTo-Json -Depth 6
 if($result.Failed -ne 0){exit 1}

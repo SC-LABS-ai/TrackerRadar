@@ -91,6 +91,42 @@ function Get-FirewallRuleSnapshot {
     }
 }
 
+function Get-BlockInternetState {
+    param($Request)
+    $programPath = [string]$Request.ProgramPath
+    if ([string]::IsNullOrWhiteSpace($programPath) -or -not (Test-Path -LiteralPath $programPath -PathType Leaf)) {
+        return [pscustomobject]@{
+            Ok=$true; ValidPath=$false; Blocked=$false; CanUndo=$false
+            ProgramPath=$programPath; RuleName=''; ChangeId=''; RecordStatus=''
+            Message='Der Programmpfad ist nicht vorhanden oder ungueltig.'
+        }
+    }
+
+    $hash = Get-ShortHash $programPath.ToLowerInvariant()
+    $ruleName = "SC LABS TrackerRadar Block $hash"
+    $snapshot = Get-FirewallRuleSnapshot $ruleName
+    $record = @(Get-ChangeRecords | Where-Object {
+        [string]$_.Action -eq 'BlockInternet' -and
+        [string]$_.Target -eq $programPath -and
+        [string]$_.Status -eq 'Applied'
+    } | Select-Object -First 1)
+    $changeId = if ($record.Count -gt 0) { [string]$record[0].Id } else { '' }
+    $recordStatus = if ($record.Count -gt 0) { [string]$record[0].Status } else { '' }
+    $canUndo = ($snapshot.Exists -and -not [string]::IsNullOrWhiteSpace($changeId))
+
+    return [pscustomobject]@{
+        Ok=$true
+        ValidPath=$true
+        Blocked=[bool]$snapshot.Exists
+        CanUndo=[bool]$canUndo
+        ProgramPath=$programPath
+        RuleName=$ruleName
+        ChangeId=$changeId
+        RecordStatus=$recordStatus
+        Message=if ($snapshot.Exists) { 'TrackerRadar-Blockregel vorhanden.' } else { 'Keine TrackerRadar-Blockregel vorhanden.' }
+    }
+}
+
 function Apply-BlockInternet {
     param($Request)
     $programPath = [string]$Request.ProgramPath
@@ -275,6 +311,7 @@ function Undo-Change {
 function Invoke-ControlRequest {
     param($Request)
     switch ([string]$Request.Action) {
+        'GetBlockState' { return Get-BlockInternetState $Request }
         'BlockInternet' { return Apply-BlockInternet $Request }
         'DisableStartup' { return Apply-DisableStartup $Request }
         'UndoChange' { return Undo-Change $Request }
@@ -298,6 +335,8 @@ function Invoke-SelfTest {
     try {
         $original = Join-Path $testRoot 'test-startup.lnk'
         Set-Content -LiteralPath $original -Value 'TrackerRadar control test' -Encoding UTF8
+        $blockState = Get-BlockInternetState ([pscustomobject]@{ ProgramPath=$original })
+        $checks += [pscustomobject]@{ Name='BlockStateReadOnly'; Passed=($blockState.ValidPath -and -not $blockState.Blocked -and -not $blockState.CanUndo); Detail=$blockState.RuleName }
         $request = [pscustomobject]@{ Action='DisableStartup'; Name='TrackerRadarControlTest'; Location=$testRoot; Command=$original; ChangeId=('test-' + [guid]::NewGuid().ToString('N')) }
         $apply = Apply-DisableStartup $request
         $disabled = -not (Test-Path -LiteralPath $original)
@@ -334,7 +373,7 @@ function Invoke-SelfTest {
         Remove-Item -LiteralPath $registryTestPath -Recurse -Force -ErrorAction SilentlyContinue
     }
 
-    $result = [pscustomobject]@{ Product='TrackerRadar Control'; Version='0.5.4-alpha'; Passed=@($checks | Where-Object {$_.Passed}).Count; Failed=@($checks | Where-Object {-not $_.Passed}).Count; Checks=$checks }
+    $result = [pscustomobject]@{ Product='TrackerRadar Control'; Version='0.5.5-alpha'; Passed=@($checks | Where-Object {$_.Passed}).Count; Failed=@($checks | Where-Object {-not $_.Passed}).Count; Checks=$checks }
     $result | ConvertTo-Json -Depth 6
     if ($result.Failed -gt 0) { exit 1 }
     exit 0

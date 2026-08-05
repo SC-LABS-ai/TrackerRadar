@@ -7,7 +7,7 @@ param(
 Set-StrictMode -Version 2.0
 $ErrorActionPreference = 'Stop'
 
-$script:Version = '0.5.4-alpha'
+$script:Version = '0.5.5-alpha'
 $script:Root = Split-Path -Parent $MyInvocation.MyCommand.Path
 if ((Split-Path -Leaf $script:Root) -eq '_development') { $script:Root = Split-Path -Parent $script:Root }
 $script:Data = Join-Path $script:Root 'data'
@@ -703,7 +703,7 @@ Add-Type -AssemblyName PresentationFramework, PresentationCore, WindowsBase
 [xml]$xaml = @'
 <Window xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="TrackerRadar 0.5.4 Alpha | SC LABS" Width="1180" Height="720" MinWidth="960" MinHeight="620" UseLayoutRounding="True" SnapsToDevicePixels="True"
+        Title="TrackerRadar 0.5.5 Alpha | SC LABS" Width="1180" Height="720" MinWidth="960" MinHeight="620" UseLayoutRounding="True" SnapsToDevicePixels="True"
         WindowStartupLocation="CenterScreen" Background="#071018" Foreground="#ECF3F7"
         FontFamily="Segoe UI" FontSize="14">
     <Window.Resources>
@@ -929,7 +929,7 @@ Add-Type -AssemblyName PresentationFramework, PresentationCore, WindowsBase
                     <Grid><Grid.RowDefinitions><RowDefinition Height="Auto"/><RowDefinition Height="*"/><RowDefinition Height="Auto"/></Grid.RowDefinitions>
                         <StackPanel Margin="17,14,17,11"><TextBlock x:Name="ActivitiesPanelTitle" Text="Alle aktiven Internetverbindungen" FontSize="18" FontWeight="SemiBold"/><TextBlock x:Name="ActivitiesPanelHint" Text="Domain, Anbieter, IP-Adresse und erster Erkennungszeitpunkt" Foreground="#8399A6" FontSize="12" Margin="0,3,0,0"/></StackPanel>
                         <DataGrid x:Name="ActivityGrid" Grid.Row="1" AlternationCount="2"><DataGrid.Columns><DataGridTextColumn Header="APP" Binding="{Binding App}" Width="1.1*"/><DataGridTextColumn Header="ZIEL" Binding="{Binding Target}" Width="1.35*"/><DataGridTextColumn Header="ANBIETER" Binding="{Binding Provider}" Width="1.15*"/><DataGridTextColumn Header="IP" Binding="{Binding Address}" Width="1.05*"/><DataGridTextColumn Header="PORT" Binding="{Binding Port}" Width="60"/><DataGridTextColumn Header="STATUS" Binding="{Binding Change}" Width="100"/><DataGridTextColumn Header="ERSTMALS" Binding="{Binding FirstSeenDisplay}" Width="105"/></DataGrid.Columns></DataGrid>
-                        <Button x:Name="BlockInternetButton" Grid.Row="2" Content="Internetzugriff blockieren" HorizontalAlignment="Right" MinWidth="215" Margin="15"/>
+                        <Button x:Name="BlockInternetButton" Grid.Row="2" Content="Internetzugriff blockieren" HorizontalAlignment="Right" MinWidth="235" Margin="15" IsEnabled="False" Tag="Block"/>
                     </Grid>
                 </Border>
 
@@ -972,7 +972,7 @@ Add-Type -AssemblyName PresentationFramework, PresentationCore, WindowsBase
                 <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
                 <TextBlock x:Name="StatusText" Text="Bereit" Foreground="#8DA1AD" TextTrimming="CharacterEllipsis"/>
                 <StackPanel Grid.Column="1" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,0,12,0">
-                    <TextBlock x:Name="FooterVersionText" Text="TrackerRadar 0.5.4 Alpha | SC LABS" Foreground="#627985" FontSize="12" VerticalAlignment="Center"/>
+                    <TextBlock x:Name="FooterVersionText" Text="TrackerRadar 0.5.5 Alpha | SC LABS" Foreground="#627985" FontSize="12" VerticalAlignment="Center"/>
                     <TextBlock Text="  |  " Foreground="#36515F" FontSize="12" VerticalAlignment="Center"/>
                     <TextBlock x:Name="FooterMalwareRadarLinkText" Text="MalwareRadar" Foreground="#49C8D8" FontSize="12" FontWeight="SemiBold" TextDecorations="Underline" Cursor="Hand" VerticalAlignment="Center" Tag="https://sclabs.uk/products/malwareradar/" ToolTip="https://sclabs.uk/products/malwareradar/"/>
                     <TextBlock Text="  |  " Foreground="#36515F" FontSize="12" VerticalAlignment="Center"/>
@@ -1114,6 +1114,7 @@ function Apply-Language {
     Set-GridHeaders $accessGrid @('HeaderApp','HeaderPID','HeaderFolder','HeaderOperation','HeaderAccesses','HeaderProgramPath')
     Set-GridHeaders $changeGrid @('HeaderTime','HeaderAction','HeaderTarget','HeaderStatus')
     if ($null -eq $script:LastSnapshot) { $statusText.Text = Get-Text 'Ready' }
+    Update-BlockInternetButton
 }
 
 function Refresh-LocalizedRows {
@@ -1135,6 +1136,7 @@ function Refresh-LocalizedRows {
     }
     $changeGrid.ItemsSource = @(Get-ChangeVaultRows)
     Update-AccessView
+    Update-BlockInternetButton
 }
 
 function Set-Language {
@@ -1288,6 +1290,55 @@ function Invoke-ControlRequest {
         }
     }
 }
+
+function Update-BlockInternetButton {
+    $item = $activityGrid.SelectedItem
+    $script:SelectedBlockState = $null
+    if (-not $item) {
+        $blockInternetButton.Content = Get-Text 'BlockInternet'
+        $blockInternetButton.Tag = 'Block'
+        $blockInternetButton.IsEnabled = $false
+        $blockInternetButton.ToolTip = Get-Text 'SelectApp'
+        return
+    }
+
+    $programPath = [string]$item.Path
+    if ([string]::IsNullOrWhiteSpace($programPath) -or -not (Test-Path -LiteralPath $programPath -PathType Leaf)) {
+        $blockInternetButton.Content = Get-Text 'BlockInternet'
+        $blockInternetButton.Tag = 'Block'
+        $blockInternetButton.IsEnabled = $false
+        $blockInternetButton.ToolTip = Get-Text 'InvalidProgramPath'
+        return
+    }
+
+    $blockInternetButton.Content = Get-Text 'BlockStateChecking'
+    $blockInternetButton.IsEnabled = $false
+    $window.Dispatcher.Invoke([action]{}, 'Background')
+    try {
+        $state = Invoke-ControlRequest -Request ([pscustomobject]@{ Action='GetBlockState'; ProgramPath=$programPath }) -RequireAdmin $false
+        if (-not $state -or -not [bool]$state.Ok -or -not [bool]$state.ValidPath) {
+            throw (Get-Text 'BlockStateUnknown')
+        }
+        $script:SelectedBlockState = $state
+        if ([bool]$state.Blocked) {
+            $blockInternetButton.Content = Get-Text 'UnblockInternet'
+            $blockInternetButton.Tag = 'Unblock'
+            $blockInternetButton.IsEnabled = [bool]$state.CanUndo
+            $blockInternetButton.ToolTip = if ([bool]$state.CanUndo) { Get-Text 'UnblockTitle' } else { Get-Text 'BlockedWithoutUndo' }
+        } else {
+            $blockInternetButton.Content = Get-Text 'BlockInternet'
+            $blockInternetButton.Tag = 'Block'
+            $blockInternetButton.IsEnabled = $true
+            $blockInternetButton.ToolTip = Get-Text 'BlockTitle'
+        }
+    } catch {
+        $blockInternetButton.Content = Get-Text 'BlockInternet'
+        $blockInternetButton.Tag = 'Unknown'
+        $blockInternetButton.IsEnabled = $false
+        $blockInternetButton.ToolTip = (Get-Text 'BlockStateUnknown') + ' ' + ([string]$_.Exception.Message)
+    }
+}
+
 $scLabsBitmap = Set-UiImage -Control $scLabsLogo -Path (Join-Path $script:Root 'assets\branding\sclabs-mark.png')
 $trackerRadarBitmap = Set-UiImage -Control $trackerRadarLogo -Path (Join-Path $script:Root 'assets\branding\trackerradar-logo.png')
 if ($trackerRadarBitmap) { $window.Icon = $trackerRadarBitmap }
@@ -1372,20 +1423,52 @@ $accessScanButton.Add_Click({
     try { Start-AccessScan } catch { [System.Windows.MessageBox]::Show((Convert-DisplayText ([string]$_.Exception.Message)), (Get-Text 'AccessDialogTitle'), 'OK', 'Error') | Out-Null }
 })
 $reportButton.Add_Click({ $report = Join-Path $script:Data 'latest-scan.json'; if (Test-Path -LiteralPath $report) { Start-Process explorer.exe -ArgumentList @('/select,', $report) } })
+$activityGrid.Add_SelectionChanged({ Update-BlockInternetButton })
 
 $blockInternetButton.Add_Click({
     $item = $activityGrid.SelectedItem
     if (-not $item) { [System.Windows.MessageBox]::Show((Get-Text 'SelectApp'), 'TrackerRadar', 'OK', 'Information') | Out-Null; return }
-    if ([string]::IsNullOrWhiteSpace([string]$item.Path) -or -not (Test-Path -LiteralPath ([string]$item.Path) -PathType Leaf)) { [System.Windows.MessageBox]::Show((Get-Text 'InvalidProgramPath'), 'TrackerRadar', 'OK', 'Warning') | Out-Null; return }
-    $message = Format-Text 'BlockPrompt' @($item.App,$item.Path)
-    if ([System.Windows.MessageBox]::Show($message, (Get-Text 'BlockTitle'), 'YesNo', 'Warning') -ne 'Yes') { return }
+    $programPath = [string]$item.Path
+    if ([string]::IsNullOrWhiteSpace($programPath) -or -not (Test-Path -LiteralPath $programPath -PathType Leaf)) { [System.Windows.MessageBox]::Show((Get-Text 'InvalidProgramPath'), 'TrackerRadar', 'OK', 'Warning') | Out-Null; return }
+
     try {
-        $response = Invoke-ControlRequest -Request ([pscustomobject]@{ Action='BlockInternet'; ProgramPath=[string]$item.Path }) -RequireAdmin $true
+        $state = Invoke-ControlRequest -Request ([pscustomobject]@{ Action='GetBlockState'; ProgramPath=$programPath }) -RequireAdmin $false
+        if (-not $state -or -not [bool]$state.Ok -or -not [bool]$state.ValidPath) { throw (Get-Text 'BlockStateUnknown') }
+
+        if ([bool]$state.Blocked) {
+            if (-not [bool]$state.CanUndo -or [string]::IsNullOrWhiteSpace([string]$state.ChangeId)) {
+                [System.Windows.MessageBox]::Show((Get-Text 'BlockedWithoutUndo'), (Get-Text 'UnblockTitle'), 'OK', 'Warning') | Out-Null
+                Update-BlockInternetButton
+                return
+            }
+            $message = Format-Text 'UnblockPrompt' @($item.App,$programPath)
+            if ([System.Windows.MessageBox]::Show($message, (Get-Text 'UnblockTitle'), 'YesNo', 'Question') -ne 'Yes') { return }
+            $response = Invoke-ControlRequest -Request ([pscustomobject]@{ Action='UndoChange'; ChangeId=[string]$state.ChangeId }) -RequireAdmin $true
+            if (-not [bool]$response.Ok) { throw [string]$response.Error }
+            [System.Windows.MessageBox]::Show((Convert-DisplayText ([string]$response.Message)), 'TrackerRadar', 'OK', 'Information') | Out-Null
+            Update-Ui
+            Set-View 'Changes'
+            return
+        }
+
+        $message = Format-Text 'BlockPrompt' @($item.App,$programPath)
+        if ([System.Windows.MessageBox]::Show($message, (Get-Text 'BlockTitle'), 'YesNo', 'Warning') -ne 'Yes') { return }
+        $response = Invoke-ControlRequest -Request ([pscustomobject]@{ Action='BlockInternet'; ProgramPath=$programPath }) -RequireAdmin $true
         if (-not [bool]$response.Ok) { throw [string]$response.Error }
         [System.Windows.MessageBox]::Show((Convert-DisplayText ([string]$response.Message)), 'TrackerRadar', 'OK', 'Information') | Out-Null
         Update-Ui
         Set-View 'Changes'
-    } catch { [System.Windows.MessageBox]::Show((Convert-DisplayText ([string]$_.Exception.Message)), (Get-Text 'ChangeNotExecuted'), 'OK', 'Error') | Out-Null }
+    } catch {
+        $errorMessage = Convert-DisplayText ([string]$_.Exception.Message)
+        $blockedAfterError = $false
+        try {
+            $check = Invoke-ControlRequest -Request ([pscustomobject]@{ Action='GetBlockState'; ProgramPath=$programPath }) -RequireAdmin $false
+            $blockedAfterError = ($check -and [bool]$check.Blocked)
+        } catch { }
+        $message = if ($blockedAfterError) { (Get-Text 'BlockStateUnknown') + "`n`n" + $errorMessage } else { Format-Text 'BlockFailedNoChange' @($errorMessage) }
+        [System.Windows.MessageBox]::Show($message, (Get-Text 'ChangeNotExecuted'), 'OK', 'Error') | Out-Null
+        Update-BlockInternetButton
+    }
 })
 
 $disableStartupButton.Add_Click({
@@ -1461,6 +1544,9 @@ if ($UiSmokeTest) {
         $results += [pscustomobject]@{ Type='ExternalLink'; Name='malwareradar-url'; Passed=([string]$footerMalwareRadarLinkText.Tag -eq 'https://sclabs.uk/products/malwareradar/'); Detail=[string]$footerMalwareRadarLinkText.Tag }
         $results += [pscustomobject]@{ Type='ExternalLink'; Name='privacyradar-url'; Passed=([string]$footerPrivacyRadarLinkText.Tag -eq 'https://sclabs.uk/products/privacyradar/'); Detail=[string]$footerPrivacyRadarLinkText.Tag }
         $results += [pscustomobject]@{ Type='Footer'; Name='version-inset'; Passed=([double]$footerVersionText.Margin.Right -eq 0 -and [double]$footerVersionText.FontSize -eq 12); Detail=[string]$footerVersionText.Text }
+        $results += [pscustomobject]@{ Type='SafeControl'; Name='block-default-disabled'; Passed=(-not [bool]$blockInternetButton.IsEnabled); Detail=[string]$blockInternetButton.IsEnabled }
+        $results += [pscustomobject]@{ Type='SafeControl'; Name='block-default-mode'; Passed=([string]$blockInternetButton.Tag -eq 'Block'); Detail=[string]$blockInternetButton.Tag }
+        $results += [pscustomobject]@{ Type='SafeControl'; Name='block-default-no-state'; Passed=($null -eq $script:SelectedBlockState); Detail=if($null -eq $script:SelectedBlockState){'none'}else{'unexpected state'} }
         $originalLanguage = $script:Language
         foreach ($language in @('de','en')) {
             Set-Language -Language $language -Save $false
@@ -1469,11 +1555,15 @@ if ($UiSmokeTest) {
             $expectedUnknown = if ($language -eq 'en') { 'Unknown service' } else { [string](Get-Text 'UnknownService') }
             $expectedAccess = if ($language -eq 'en') { 'Start 5-second scan' } else { [string](Get-Text 'AccessStart') }
             $expectedMoreProducts = [string](Get-Text 'MoreProductsTitle')
+            $expectedBlock = [string](Get-Text 'BlockInternet')
+            $expectedUnblock = [string](Get-Text 'UnblockInternet')
             $results += [pscustomobject]@{ Type='Language'; Name="$language-navigation"; Passed=([string]$navOverview.Content -eq $expectedOverview); Detail=[string]$navOverview.Content }
             $results += [pscustomobject]@{ Type='Language'; Name="$language-provider-header"; Passed=([string]$activityGrid.Columns[2].Header -eq $expectedProvider); Detail=[string]$activityGrid.Columns[2].Header }
             $results += [pscustomobject]@{ Type='Language'; Name="$language-unknown-provider"; Passed=((Convert-DisplayText 'Unbekannter Dienst') -eq $expectedUnknown); Detail=(Convert-DisplayText 'Unbekannter Dienst') }
             $results += [pscustomobject]@{ Type='Language'; Name="$language-access-button"; Passed=([string]$accessScanButton.Content -eq $expectedAccess); Detail=[string]$accessScanButton.Content }
             $results += [pscustomobject]@{ Type='Language'; Name="$language-related-title"; Passed=([string]$moreProductsTitleText.Text -eq $expectedMoreProducts); Detail=[string]$moreProductsTitleText.Text }
+            $results += [pscustomobject]@{ Type='SafeControl'; Name="$language-block-label"; Passed=([string]$blockInternetButton.Content -eq $expectedBlock); Detail=[string]$blockInternetButton.Content }
+            $results += [pscustomobject]@{ Type='SafeControl'; Name="$language-unblock-label"; Passed=(-not [string]::IsNullOrWhiteSpace($expectedUnblock)); Detail=$expectedUnblock }
             $results += [pscustomobject]@{ Type='Language'; Name="$language-sclabs-link"; Passed=([string]$scLabsWebsiteLinkText.Text -eq 'sclabs.uk'); Detail=[string]$scLabsWebsiteLinkText.Text }
             $results += [pscustomobject]@{ Type='Footer'; Name="$language-malwareradar-link"; Passed=([string]$footerMalwareRadarLinkText.Text -eq 'MalwareRadar'); Detail=[string]$footerMalwareRadarLinkText.Text }
             $results += [pscustomobject]@{ Type='Footer'; Name="$language-privacyradar-link"; Passed=([string]$footerPrivacyRadarLinkText.Text -eq 'PrivacyRadar'); Detail=[string]$footerPrivacyRadarLinkText.Text }

@@ -10,7 +10,7 @@ TrackerRadar shows which applications maintain external TCP connections, where t
 
 ## Status
 
-**Version:** `0.5.4-alpha`
+**Version:** `0.5.5-alpha`
 
 **State:** local visibility and safe-control prototype, not a complete security product
 
@@ -34,7 +34,8 @@ TrackerRadar shows which applications maintain external TCP connections, where t
 - Group file-access events by process, PID, folder category and observed operation
 - Store no document contents and no individual file names in the access-scan result
 - Delete temporary ETL and CSV trace files immediately after local summarization
-- Block outbound internet access for a selected application through an explicit Windows Firewall rule
+- Show the verified firewall state for the selected application and switch the same button between **Block internet access** and **Restore internet access**
+- Remove only an exact TrackerRadar-created firewall rule that still has its matching applied Change Vault record
 - Disable selected startup findings without deleting the original value or file
 - Record approved control actions in a local Change Vault and undo supported changes
 - Write local JSON reports under `data/`
@@ -53,6 +54,8 @@ No installation is required for the alpha.
 
 TrackerRadar does not elevate silently. The main interface runs without persistent administrator rights. The standard launcher hides only the PowerShell console; the TrackerRadar window remains visible and testable.
 
+In **Activities**, the control button first reads the exact TrackerRadar firewall-rule state. It offers **Restore internet access** only when the exact rule exists and its matching applied Change Vault record is available. A failed block attempt explicitly states when no verified rule was created and nothing needs to be undone.
+
 ## What the file-access scan means
 
 The current scan reliably associates Windows file-system events with a process and one of the monitored folder categories. It currently reports **Opened** and **Directory enumerated** style events. It does not claim that every event proves a file was read, copied or uploaded.
@@ -68,13 +71,13 @@ powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Test-TrackerRadar-App.
 The regression test covers:
 
 - application core: 10 checks
-- control helper: 9 checks
+- control helper, including read-only firewall-state verification: 10 checks
 - control UAC wrapper: 3 checks
 - file-access parser and privacy rules: 6 checks
 - file-access UAC wrapper: 3 checks
 - localization files, Unicode and persistence: 8 checks
 - hidden launcher and visible-window verification: 7 checks
-- bilingual UI, logo fit, sidebar website link, footer product links and navigation: 31 checks
+- bilingual UI, safe block/restore state, logo fit, sidebar website link, footer product links and navigation: 38 checks
 - WPF launch, GUI errors and memory usage
 
 Machine-specific results are stored in the ignored `data/` directory.
@@ -118,4 +121,4 @@ Copyright 2026 SC LABS. All rights reserved. TrackerRadar is proprietary freewar
 
 ## Kurzbeschreibung auf Deutsch
 
-TrackerRadar ist eine portable, lokale Windows-App im SC-LABS-Design. Sie zeigt aktive externe Verbindungen, erklärt bekannte Ziele, erkennt neue Aktivitäten gegenüber einer lokalen Baseline und führt einen begrenzten Sieben-Tage-Verlauf. Die vollständige Oberfläche kann lokal zwischen Deutsch und Englisch umgeschaltet werden; die Auswahl wird ausschließlich lokal gespeichert. Der Standardstart blendet das PowerShell-Konsolenfenster aus und zeigt nur die TrackerRadar-Oberfläche. Version 0.5 ergänzt einen bewusst gestarteten Fünf-Sekunden-Scan für ausgewählte Benutzerordner und Browserprofile. Angezeigt werden nur gebündelte Prozess-, Ordner- und Zugriffsinformationen; Dateiinhalte und einzelne Dateinamen werden nicht im Ergebnis gespeichert. Firewall- und Autostartaktionen bleiben bestätigungspflichtig und rückgängig machbar. Die Seitenleiste verlinkt MalwareRadar und PrivacyRadar erst nach einem bewussten Klick. TrackerRadar bleibt proprietäre Freeware; Weiterverteilung, Rebranding und kommerzielle Nutzung über die Lizenzrechte hinaus bleiben SC LABS vorbehalten.
+TrackerRadar ist eine portable, lokale Windows-App im SC-LABS-Design. Sie zeigt aktive externe Verbindungen, erklärt bekannte Ziele, erkennt neue Aktivitäten gegenüber einer lokalen Baseline und führt einen begrenzten Sieben-Tage-Verlauf. Die vollständige Oberfläche kann lokal zwischen Deutsch und Englisch umgeschaltet werden; die Auswahl wird ausschließlich lokal gespeichert. Der Standardstart blendet das PowerShell-Konsolenfenster aus und zeigt nur die TrackerRadar-Oberfläche. Version 0.5 ergänzt einen bewusst gestarteten Fünf-Sekunden-Scan für ausgewählte Benutzerordner und Browserprofile. Angezeigt werden nur gebündelte Prozess-, Ordner- und Zugriffsinformationen; Dateiinhalte und einzelne Dateinamen werden nicht im Ergebnis gespeichert. Firewall- und Autostartaktionen bleiben bestätigungspflichtig und rückgängig machbar. In Aktivitäten zeigt derselbe Button anhand des bestätigten Regelzustands entweder **Internetzugriff blockieren** oder **Internetzugriff freigeben**. Eine Freigabe wird nur für eine exakte TrackerRadar-Regel mit passendem Change-Vault-Eintrag angeboten. Die Seitenleiste verlinkt `sclabs.uk`; MalwareRadar und PrivacyRadar stehen als Footer-Links bereit und öffnen sich erst nach einem bewussten Klick. TrackerRadar bleibt proprietäre Freeware; Weiterverteilung, Rebranding und kommerzielle Nutzung über die Lizenzrechte hinaus bleiben SC LABS vorbehalten.

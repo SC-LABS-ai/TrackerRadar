@@ -8,6 +8,32 @@ All notable changes to TrackerRadar are documented here.
 - Richer operation classification without overstating intent
 - Compiled Windows build and signed installer
 
+## [0.5.5-alpha] - 2026-08-05
+
+### Added
+- Read-only firewall-state lookup for the selected executable
+- State-aware Activities control that switches between **Block internet access** and **Restore internet access**
+- Safe restore path that uses only the matching applied Change Vault record
+- Explicit German and English messages when a block attempt produced no verified rule and therefore needs no rollback
+
+### Fixed
+- Added a short bounded wait for the elevated pointer and request files to avoid transient `not found` failures after UAC approval
+- Disabled the Activities control until an application with a valid executable path is selected and its rule state is confirmed
+
+### Safety
+- A restore action is offered only when the exact TrackerRadar rule and its matching applied Change Vault record both exist
+- Rules without a safe rollback record are reported but are not automatically removed
+- No live firewall rule was created or removed during this safety pass
+- Read-only verification confirmed that Wispr Flow remained unblocked, with no TrackerRadar rule and an empty Change Vault
+
+### Verified
+- Application core: 10/10 passed
+- Control helper including read-only block-state lookup: 10/10 passed
+- Six views, both languages and safe block/restore states: 38/38 passed
+- Full regression working set after ten seconds: 179.6 MB
+- Full regression private memory after ten seconds: 159.9 MB
+- GUI errors: none
+
 ## [0.5.4-alpha] - 2026-08-05
 
 ### Changed

@@ -121,7 +121,7 @@ try {
     $postExit = Invoke-TestCurl
 
     $result = [pscustomobject]@{
-        Version='0.5.4-alpha'; Timestamp=(Get-Date).ToString('o')
+        Version='0.5.5-alpha'; Timestamp=(Get-Date).ToString('o')
         Passed=($ruleAfterApply.Exists -and $blockedExit -ne 0 -and $duplicatePrevented -and -not $ruleAfterUndo.Exists -and $postExit -eq 0)
         PreConnectionPassed=($preExit -eq 0)
         RuleCreatedAndVerified=$ruleAfterApply.Exists
@@ -134,7 +134,7 @@ try {
         RemainingRule=$ruleAfterUndo.Exists
     }
 } catch {
-    $result = [pscustomobject]@{ Version='0.5.4-alpha'; Timestamp=(Get-Date).ToString('o'); Passed=$false; Error=$_.Exception.Message }
+    $result = [pscustomobject]@{ Version='0.5.5-alpha'; Timestamp=(Get-Date).ToString('o'); Passed=$false; Error=$_.Exception.Message }
 } finally {
     try {
         $record = Join-Path $changesRoot ($changeId + '.json')
