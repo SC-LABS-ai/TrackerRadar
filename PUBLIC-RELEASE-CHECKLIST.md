@@ -1,6 +1,6 @@
 # Public release checklist
 
-TrackerRadar is prepared for version control but is not ready for a public release yet.
+TrackerRadar is published as a clearly labelled public alpha. The remaining items below are follow-up hardening gates, not claims that the alpha is production-ready.
 
 ## Required before publishing
 
@@ -24,10 +24,10 @@ TrackerRadar is prepared for version control but is not ready for a public relea
 - [x] Use a portable-only alpha release; installer and code signing are deferred to a later beta or Pro edition
 - [ ] Enable GitHub Private Vulnerability Reporting
 - [x] Review README, privacy statement, security model and limitations for 0.5
-- [ ] Create the public GitHub repository and add its remote only after approval
+- [x] Create the public GitHub repository and add its remote after explicit approval
 
 ## Current release status
 
 `0.5.5-alpha` is a local visibility and reversible-control prototype with a verified German and English interface, console-free standard launcher, fitted branding and a state-aware Activities control. The control offers restore only when the exact TrackerRadar firewall rule and its matching applied Change Vault record both exist. A failed block attempt is rechecked and clearly reports when no verified rule was created. The manual five-second access scan remains limited to process-to-folder-category association and automatic raw-trace cleanup.
 
-Public release remains blocked by the second-machine clean test, asset-rights verification and current post-0.5.5 screenshots. The isolated copied-`curl.exe` UAC firewall block/rollback proof passed with no residual rule or test artifact.
+The public alpha is available from `https://github.com/SC-LABS-ai/TrackerRadar`. Remaining follow-up work is the second-machine clean test, asset-rights documentation and current post-0.5.5 screenshots. The isolated copied-`curl.exe` UAC firewall block/rollback proof passed with no residual rule.

@@ -56,14 +56,13 @@ Bei der initialen Wispr-Flow-Diagnose wurde keine reale Firewall-Regel angelegt 
 
 Das finale Paket wird durch `Build-Portable.ps1` nur erzeugt, wenn App, Control, UAC-Wrapper, Dateizugriff, Lokalisierung, Launcher und UI-Gates bestehen. Die separate SHA-256-Datei ist die verbindliche Hashquelle fuer das erzeugte ZIP.
 
-## Noch offene oeffentliche Release-Gates
+## Verbleibende oeffentliche Haertungsaufgaben
 
 - Portable-Paket auf einem zweiten Windows-PC testen
 - Rechte an Marken- und Bildassets abschliessend dokumentieren
 - aktuelle Screenshots von `0.5.5-alpha` erstellen
-- GitHub Private Vulnerability Reporting nach Erstellung des oeffentlichen Repositories aktivieren
-- GitHub-Remote und Veroeffentlichung erst nach ausdruecklicher Freigabe einrichten
+- GitHub Private Vulnerability Reporting aktivieren
 
 ## Bewertung
 
-TrackerRadar `0.5.5-alpha` beseitigt die unklare Situation nach einem fehlgeschlagenen Blockversuch: Der Nutzer sieht den bestaetigten Regelzustand und erhaelt eine Freigabeoption nur fuer sicher zuordenbare TrackerRadar-Aenderungen. Der reale isolierte Firewall-Wirkungstest ist bestanden; offen bleiben nur der zweite Windows-PC, die Asset-Rechte, aktuelle Screenshots und die anschliessende GitHub-/Website-Freigabe.
+TrackerRadar `0.5.5-alpha` beseitigt die unklare Situation nach einem fehlgeschlagenen Blockversuch: Der Nutzer sieht den bestaetigten Regelzustand und erhaelt eine Freigabeoption nur fuer sicher zuordenbare TrackerRadar-Aenderungen. Der reale isolierte Firewall-Wirkungstest ist bestanden. Das oeffentliche Repository ist unter `https://github.com/SC-LABS-ai/TrackerRadar` eingerichtet; verbleibend sind der zweite Windows-PC, die Asset-Rechte, aktuelle Screenshots und die Website-Aktualisierung.

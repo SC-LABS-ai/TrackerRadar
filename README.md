@@ -111,7 +111,7 @@ See [PRIVACY.md](PRIVACY.md) and [SECURITY.md](SECURITY.md). Scan data and local
 
 ## Public release preparation
 
-No GitHub remote is configured and no public push has been performed. See [PUBLIC-RELEASE-CHECKLIST.md](PUBLIC-RELEASE-CHECKLIST.md).
+Public repository: `https://github.com/SC-LABS-ai/TrackerRadar`. Versioned alpha builds are published as GitHub prereleases with a matching SHA-256 file. See [PUBLIC-RELEASE-CHECKLIST.md](PUBLIC-RELEASE-CHECKLIST.md) for the remaining hardening work.
 
 ## Rights
 
