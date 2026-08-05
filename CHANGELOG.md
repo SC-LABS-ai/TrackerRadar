@@ -8,6 +8,35 @@ All notable changes to TrackerRadar are documented here.
 - Richer operation classification without overstating intent
 - Compiled Windows build and signed installer
 
+## [0.5.3-alpha] - 2026-08-05
+
+### Added
+- Console-free Windows Script Host launcher while keeping the TrackerRadar WPF window visible
+- Compact MalwareRadar and PrivacyRadar product-family links in the sidebar
+- Fixed allowlist for the two official HTTPS product pages; no background website access
+- SC LABS proprietary freeware license with future commercial and Pro editions reserved
+- Dedicated hidden-launcher regression test
+
+### Changed
+- Enlarged and clipped the SC LABS mark for a cleaner fit inside its rounded frame
+- Scaled the TrackerRadar artwork within its existing rounded product frame
+- Kept the CMD launcher as a compatible fallback that delegates to the hidden VBS launcher
+
+### Safety
+- Product pages open only after an explicit click in the user's default browser
+- No embedded browser, preload, download execution, telemetry or background web request was added
+- Monitoring, file-access scanning, firewall control, startup control and rollback behavior are unchanged
+
+### Verified
+- Application core: 10/10 passed
+- Hidden launcher and window visibility: 7/7 passed
+- Localization, parallel keys, Unicode and persistence: 8/8 passed with 146 German and 146 English keys
+- Six views, bilingual UI, logo fit and product links: 27/27 passed
+- Full regression working set after ten seconds: 179.7 MB
+- Full regression private memory after ten seconds: 160.5 MB
+- Full regression CPU time after ten seconds: 4.75 seconds
+- GUI errors: none
+
 ## [0.5.2-alpha] - 2026-08-04
 
 ### Changed

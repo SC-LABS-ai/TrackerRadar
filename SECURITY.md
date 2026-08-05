@@ -11,6 +11,12 @@ TrackerRadar is an early local alpha and is not a replacement for antivirus, EDR
 - Supported control actions write rollback information to the local Change Vault before modifying Windows.
 - The current alpha only supports outbound firewall blocking and selected startup disable/undo operations.
 
+## External link model
+
+- TrackerRadar contains only two fixed HTTPS product links: MalwareRadar and PrivacyRadar on `sclabs.uk`.
+- Links open in the user's default browser only after an explicit click.
+- TrackerRadar does not embed a browser, execute downloaded content or contact those pages in the background.
+
 ## File-access scan model
 
 - The scan starts only after an explicit user action and visible UAC approval.

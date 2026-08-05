@@ -10,7 +10,7 @@ TrackerRadar shows which applications maintain external TCP connections, where t
 
 ## Status
 
-**Version:** `0.5.2-alpha`
+**Version:** `0.5.3-alpha`
 
 **State:** local visibility and safe-control prototype, not a complete security product
 
@@ -27,7 +27,9 @@ TrackerRadar shows which applications maintain external TCP connections, where t
 - Provide Overview, Activities, Findings, History, File Access and Changes views
 - Switch the complete interface locally between German and English
 - Use a rounded dark-theme language selector matched to the primary button palette
+- Fit the SC LABS and TrackerRadar marks cleanly into their rounded sidebar frames
 - Remember the selected language in the local ignored `data/ui-settings.json` file
+- Offer explicit links to the MalwareRadar and PrivacyRadar product pages; no website is contacted until the user clicks
 - Run an explicitly started five-second file-access scan for Documents, Desktop, Downloads, OneDrive, Edge profiles and Chrome profiles
 - Group file-access events by process, PID, folder category and observed operation
 - Store no document contents and no individual file names in the access-scan result
@@ -43,13 +45,13 @@ TrackerRadar shows which applications maintain external TCP connections, where t
 No installation is required for the alpha.
 
 1. Download or clone the repository.
-2. Double-click `Start-TrackerRadar.cmd`.
+2. Double-click `Start-TrackerRadar.vbs` for a console-free start. `Start-TrackerRadar.cmd` is kept as a compatible fallback and delegates to the same hidden launcher.
 3. Select **Deutsch** or **English** from the language selector in the upper-right corner.
 4. Select **Jetzt prüfen / Scan now** for a network and startup snapshot.
 5. Open **Dateizugriffe / File access** and start the five-second user-folder scan when needed.
 6. Confirm the normal Windows UAC prompt when starting the file-access scan or a protected control action.
 
-TrackerRadar does not elevate silently. The main interface runs without persistent administrator rights.
+TrackerRadar does not elevate silently. The main interface runs without persistent administrator rights. The standard launcher hides only the PowerShell console; the TrackerRadar window remains visible and testable.
 
 ## What the file-access scan means
 
@@ -71,7 +73,8 @@ The regression test covers:
 - file-access parser and privacy rules: 6 checks
 - file-access UAC wrapper: 3 checks
 - localization files, Unicode and persistence: 8 checks
-- bilingual UI and navigation: 14 checks
+- hidden launcher and visible-window verification: 7 checks
+- bilingual UI, logo fit, product links and navigation: 27 checks
 - WPF launch, GUI errors and memory usage
 
 Machine-specific results are stored in the ignored `data/` directory.
@@ -101,7 +104,7 @@ This creates an ignored `dist/` folder containing the portable ZIP and a matchin
 
 ## Privacy and security
 
-See [PRIVACY.md](PRIVACY.md) and [SECURITY.md](SECURITY.md). Scan data and local development files are excluded from Git.
+See [PRIVACY.md](PRIVACY.md) and [SECURITY.md](SECURITY.md). Scan data and local development files are excluded from Git. The MalwareRadar and PrivacyRadar links open the external SC LABS website only after an explicit click; TrackerRadar does not preload those pages.
 
 ## Public release preparation
 
@@ -109,10 +112,10 @@ No GitHub remote is configured and no public push has been performed. See [PUBLI
 
 ## Rights
 
-Copyright 2026 SC LABS. All rights reserved. No open-source license has been selected yet. See [NOTICE.md](NOTICE.md).
+Copyright 2026 SC LABS. All rights reserved. TrackerRadar is proprietary freeware, not open source. Permitted private, internal-business and evaluation use is defined in [LICENSE.md](LICENSE.md); branding and redistribution remain restricted. See also [NOTICE.md](NOTICE.md).
 
 ---
 
 ## Kurzbeschreibung auf Deutsch
 
-TrackerRadar ist eine portable, lokale Windows-App im SC-LABS-Design. Sie zeigt aktive externe Verbindungen, erklärt bekannte Ziele, erkennt neue Aktivitäten gegenüber einer lokalen Baseline und führt einen begrenzten Sieben-Tage-Verlauf. Die vollständige Oberfläche kann lokal zwischen Deutsch und Englisch umgeschaltet werden; die Auswahl wird ausschließlich lokal gespeichert. Version 0.5 ergänzt einen bewusst gestarteten Fünf-Sekunden-Scan für ausgewählte Benutzerordner und Browserprofile. Angezeigt werden nur gebündelte Prozess-, Ordner- und Zugriffsinformationen; Dateiinhalte und einzelne Dateinamen werden nicht im Ergebnis gespeichert. Firewall- und Autostartaktionen bleiben bestätigungspflichtig und rückgängig machbar.
+TrackerRadar ist eine portable, lokale Windows-App im SC-LABS-Design. Sie zeigt aktive externe Verbindungen, erklärt bekannte Ziele, erkennt neue Aktivitäten gegenüber einer lokalen Baseline und führt einen begrenzten Sieben-Tage-Verlauf. Die vollständige Oberfläche kann lokal zwischen Deutsch und Englisch umgeschaltet werden; die Auswahl wird ausschließlich lokal gespeichert. Der Standardstart blendet das PowerShell-Konsolenfenster aus und zeigt nur die TrackerRadar-Oberfläche. Version 0.5 ergänzt einen bewusst gestarteten Fünf-Sekunden-Scan für ausgewählte Benutzerordner und Browserprofile. Angezeigt werden nur gebündelte Prozess-, Ordner- und Zugriffsinformationen; Dateiinhalte und einzelne Dateinamen werden nicht im Ergebnis gespeichert. Firewall- und Autostartaktionen bleiben bestätigungspflichtig und rückgängig machbar. Die Seitenleiste verlinkt MalwareRadar und PrivacyRadar erst nach einem bewussten Klick. TrackerRadar bleibt proprietäre Freeware; Weiterverteilung, Rebranding und kommerzielle Nutzung über die Lizenzrechte hinaus bleiben SC LABS vorbehalten.

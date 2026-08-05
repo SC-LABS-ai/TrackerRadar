@@ -44,7 +44,7 @@ try {
 
 $result = [pscustomobject]@{
     Product='TrackerRadar Localization'
-    Version='0.5.2-alpha'
+    Version='0.5.3-alpha'
     Passed=@($checks | Where-Object { $_.Passed }).Count
     Failed=@($checks | Where-Object { -not $_.Passed }).Count
     Checks=$checks

@@ -1,5 +1,5 @@
 param(
-    [string]$Version = '0.5.2-alpha'
+    [string]$Version = '0.5.3-alpha'
 )
 
 $ErrorActionPreference = 'Stop'
@@ -21,6 +21,8 @@ if ($LASTEXITCODE -ne 0) { throw 'Access-scan self-test failed. Package was not 
 if ($LASTEXITCODE -ne 0) { throw 'Access-scan wrapper self-test failed. Package was not created.' }
 & powershell.exe -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -File (Join-Path $root 'Test-TrackerRadar-Localization.ps1')
 if ($LASTEXITCODE -ne 0) { throw 'Localization self-test failed. Package was not created.' }
+& powershell.exe -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -File (Join-Path $root 'Test-TrackerRadar-Launcher.ps1')
+if ($LASTEXITCODE -ne 0) { throw 'Hidden-launcher self-test failed. Package was not created.' }
 & powershell.exe -NoLogo -NoProfile -STA -ExecutionPolicy Bypass -File (Join-Path $root 'TrackerRadar.App.ps1') -UiSmokeTest
 if ($LASTEXITCODE -ne 0) { throw 'UI smoke test failed. Package was not created.' }
 
@@ -36,13 +38,16 @@ $files = @(
     'TrackerRadar.AccessScan.Elevated.ps1',
     'TrackerRadar.Localization.ps1',
     'Start-TrackerRadar.cmd',
+    'Start-TrackerRadar.vbs',
     'Test-TrackerRadar-App.ps1',
     'Test-TrackerRadar-Localization.ps1',
+    'Test-TrackerRadar-Launcher.ps1',
     'Test-Firewall-BlockUndo.ps1',
     'README.md',
     'CHANGELOG.md',
     'PRIVACY.md',
     'SECURITY.md',
+    'LICENSE.md',
     'NOTICE.md'
 )
 foreach ($file in $files) {

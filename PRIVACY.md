@@ -14,6 +14,10 @@ TrackerRadar is designed as a local-first Windows application.
 - Control requests and responses remain local and are removed after processing
 - HTTPS payloads are not decrypted
 
+## External product links
+
+The sidebar contains explicit links to the SC LABS MalwareRadar and PrivacyRadar product pages. TrackerRadar does not preload those pages, embed a browser or contact the website in the background. A normal external browser request occurs only after the user selects one of the links.
+
 ## File-access short scan
 
 The file-access feature runs only after the user selects the scan button and confirms the visible Windows UAC prompt.
