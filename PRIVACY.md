@@ -2,6 +2,8 @@
 
 TrackerRadar is designed as a local-first Windows application.
 
+Official publisher: [SC LABS](https://sclabs.uk/)
+
 ## Current alpha behavior
 
 - No user account

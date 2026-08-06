@@ -2,6 +2,8 @@
 
 TrackerRadar is published as a clearly labelled public alpha. The remaining items below are follow-up hardening gates, not claims that the alpha is production-ready.
 
+Official publisher: [SC LABS](https://sclabs.uk/)
+
 ## Required before publishing
 
 - [x] Confirm product name and SC LABS branding for the alpha

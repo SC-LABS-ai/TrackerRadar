@@ -1,67 +1,89 @@
-# TrackerRadar Alpha - Status
+# TrackerRadar Alpha — Status
 
-Stand: 2026-08-05, 17:16 Uhr Europe/Berlin
+Updated: 2026-08-06, Europe/Berlin
 
-## Ergebnis
+[Official SC LABS website](https://sclabs.uk/)
 
-TrackerRadar `0.5.5-alpha` ist als portable, lokale Windows-Anwendung fuer die interne Alpha-Nutzung fertiggestellt. Der aktuelle Pass haertet ausschliesslich die bestaetigungspflichtige Firewall-Steuerung und ihre Ruecknahme. Netzwerkmonitoring, Datei-/Ordnerzugriff, Autostart, History, Findings, Sprache, Branding und Launcher wurden nicht funktional umgebaut.
+## Result
 
-## Sicherer Blockieren-/Freigeben-Ablauf
+TrackerRadar `0.5.5-alpha` is complete as a portable, local Windows alpha. The latest safety pass hardened only the explicitly confirmed firewall control and restore workflow. Network visibility, file-access scanning, startup inspection, history, findings, localization, branding and launcher behaviour remain intact.
 
-- Der Activities-Button ist ohne gueltige Auswahl deaktiviert.
-- Nach Auswahl einer App liest TrackerRadar zuerst den exakten Zustand seiner deterministischen Windows-Firewall-Regel.
-- Ohne Regel erscheint `Internetzugriff blockieren` beziehungsweise `Block internet access`.
-- Mit exakter TrackerRadar-Regel und passendem angewendetem Change-Vault-Eintrag erscheint `Internetzugriff freigeben` beziehungsweise `Restore internet access`.
-- Eine Regel ohne passenden sicheren Change-Vault-Eintrag wird nicht automatisch entfernt.
-- Nach einem fehlgeschlagenen Blockversuch wird der Regelzustand erneut gelesen. Wenn keine bestaetigte Regel existiert, meldet TrackerRadar ausdruecklich, dass nichts geaendert wurde und keine Ruecknahme erforderlich ist.
-- Der erhoehte Helper wartet begrenzt auf seine lokalen Pointer- und Request-Dateien, um kurzzeitige `nicht gefunden`-Fehler nach der UAC-Bestaetigung zu vermeiden.
+## Verified block and restore workflow
 
-## Wispr-Flow-Pruefung
+- The Activities control is disabled until a valid application is selected.
+- TrackerRadar reads the exact deterministic Windows Firewall rule state for the selected executable.
+- Without a rule, the control shows **Block internet access**.
+- With the exact TrackerRadar rule and its matching applied Change Vault record, it shows **Restore internet access**.
+- A rule without a matching safe rollback record is not removed automatically.
+- After a failed block attempt, TrackerRadar checks the real rule state again and explicitly reports when nothing changed and no rollback is required.
+- The elevated helper waits for its constrained local pointer and request files to avoid short timing-related file-not-found errors after UAC confirmation.
 
-Die vom Nutzer gemeldete Aktion wurde ausschliesslich read-only untersucht:
+## Wispr Flow investigation
 
-- Wispr-Flow-Programmpfad vorhanden: **PASS**
-- Wispr Flow aktuell aktiv: **PASS**
-- TrackerRadar-Firewall-Regel fuer Wispr Flow: **nicht vorhanden**
-- sonstige Wispr-Firewall-Regel: **nicht vorhanden**
-- Change-Vault-Eintrag: **nicht vorhanden**
-- aktueller Zustand: **Wispr Flow ist nicht blockiert**
+The reported Wispr Flow action was investigated read-only:
 
-Bei der initialen Wispr-Flow-Diagnose wurde keine reale Firewall-Regel angelegt oder entfernt. Der separate isolierte `curl.exe`-Test hat danach eine ausschliesslich fuer die Testkopie geltende Regel erfolgreich angelegt, die Verbindung zu drei neutralen HTTPS-Zielen blockiert und die Regel anschliessend vollstaendig entfernt.
+- Wispr Flow executable path present: **PASS**
+- Wispr Flow running normally: **PASS**
+- TrackerRadar firewall rule for Wispr Flow: **not present**
+- other Wispr Flow firewall rule: **not present**
+- Change Vault record: **not present**
+- confirmed state: **Wispr Flow is not blocked**
 
-## Verifizierte Funktionen
+No firewall rule was created or removed during the Wispr Flow diagnosis.
 
-- App-Kern: **10/10 PASS**
-- Control-Helper inklusive read-only Blockstatus: **10/10 PASS**
-- Control-UAC-Wrapper: **PASS**
-- isolierter Firewall-Block-/Freigabe-Test mit kopierter `curl.exe`: **PASS**
-- Regel erstellt und verifiziert, drei von drei Testzielen blockiert, doppelte Regel verhindert, Regel entfernt, drei von drei Testzielen wieder erreichbar, keine Restregel: **PASS**
-- Dateizugriffs-Parser und Datenschutzregeln: **6/6 PASS**
-- Dateizugriffs-UAC-Wrapper: **PASS**
-- Lokalisierung, Unicode und Speicherung: **8/8 PASS**
-- deutsche und englische Sprachschluessel: **153/153**
-- versteckter Launcher und sichtbares App-Fenster: **PASS**
-- sechs Ansichten, beide Sprachen und Safe-Control-Zustaende: **38/38 PASS**
-- GUI-Fehlerausgabe: leer
+## Isolated firewall proof
 
-## Letzter vollstaendiger Regressionstest
+The separate test used only a copied Windows `curl.exe` executable:
 
-- Working Set nach 10 Sekunden: **179,6 MB**
-- privater Speicher nach 10 Sekunden: **159,9 MB**
-- CPU-Zeit nach 10 Sekunden: **4,14 Sekunden**
-- Ziel unter 180 MB Working Set: **PASS**
-- Ziel unter 200 MB Working Set: **PASS**
+- connectivity before blocking: **3/3 targets reachable**
+- exact outbound rule created and verified: **PASS**
+- connectivity while blocked: **0/3 targets reachable**
+- duplicate rule creation prevented: **PASS**
+- matching Change Vault action restored access: **PASS**
+- connectivity after restore: **3/3 targets reachable**
+- residual firewall rule: **none**
+- residual test change: **none**
 
-## Portable-Paket
+## Verified components
 
-Das finale Paket wird durch `Build-Portable.ps1` nur erzeugt, wenn App, Control, UAC-Wrapper, Dateizugriff, Lokalisierung, Launcher und UI-Gates bestehen. Die separate SHA-256-Datei ist die verbindliche Hashquelle fuer das erzeugte ZIP.
+- application core: **10/10 PASS**
+- control helper including read-only block-state verification: **10/10 PASS**
+- control UAC wrapper: **PASS**
+- isolated firewall block and restore test: **PASS**
+- file-access parser and privacy rules: **6/6 PASS**
+- file-access UAC wrapper: **PASS**
+- localization, Unicode and persistence: **8/8 PASS**
+- German and English locale keys: **153/153**
+- hidden launcher and visible application window: **PASS**
+- six views, both languages and safe-control states: **38/38 PASS**
+- GUI error output: **empty**
 
-## Verbleibende oeffentliche Haertungsaufgaben
+## Latest full regression measurement
 
-- Portable-Paket auf einem zweiten Windows-PC testen
-- Rechte an Marken- und Bildassets abschliessend dokumentieren
-- aktuelle Screenshots von `0.5.5-alpha` erstellen
+- working set after ten seconds: **173.8 MB**
+- private memory after ten seconds: **154.4 MB**
+- CPU time after ten seconds: **3.59 seconds**
+- target below 180 MB working set: **PASS**
+- target below 200 MB working set: **PASS**
 
-## Bewertung
+## Portable package
 
-TrackerRadar `0.5.5-alpha` beseitigt die unklare Situation nach einem fehlgeschlagenen Blockversuch: Der Nutzer sieht den bestaetigten Regelzustand und erhaelt eine Freigabeoption nur fuer sicher zuordenbare TrackerRadar-Aenderungen. Der reale isolierte Firewall-Wirkungstest ist bestanden. Das oeffentliche Repository ist unter `https://github.com/SC-LABS-ai/TrackerRadar` eingerichtet; verbleibend sind der zweite Windows-PC, die Asset-Rechte, aktuelle Screenshots und die Website-Aktualisierung.
+`Build-Portable.ps1` creates the package only after the application, control helper, UAC wrappers, file-access, localization, launcher and UI gates pass. The matching SHA-256 file is the authoritative integrity reference for the ZIP.
+
+## Public distribution
+
+- Repository: [SC-LABS-ai/TrackerRadar](https://github.com/SC-LABS-ai/TrackerRadar)
+- Official publisher: [SC LABS](https://sclabs.uk/)
+- Current release: `v0.5.5-alpha`, published as a GitHub prerelease
+- Private Vulnerability Reporting: enabled
+
+## Remaining hardening work
+
+- Test the portable package on a second Windows computer.
+- Document ownership and redistribution rights for all branding assets.
+- Add current `0.5.5-alpha` screenshots.
+- Update the TrackerRadar page on the official SC LABS website.
+
+## Assessment
+
+TrackerRadar `0.5.5-alpha` now presents the confirmed firewall state and offers restore only for safely attributable TrackerRadar changes. The isolated firewall-effect test passed with complete rollback and no residual rule. The public alpha is suitable for controlled evaluation while the remaining second-machine, asset-rights and presentation checks are completed.

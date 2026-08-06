@@ -2,6 +2,8 @@
 
 TrackerRadar is an early local alpha and is not a replacement for antivirus, EDR or professional incident response.
 
+Official publisher: [SC LABS](https://sclabs.uk/)
+
 ## Control model
 
 - The main interface runs without persistent administrator rights.

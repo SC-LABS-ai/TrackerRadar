@@ -50,4 +50,5 @@ This license ends automatically if you breach its terms. On termination, you mus
 
 Questions about redistribution, commercial use, integration or licensing may be directed to:
 
-`contact@sclabs.uk`
+- Email: `contact@sclabs.uk`
+- Official website: [sclabs.uk](https://sclabs.uk/)

@@ -1,70 +1,72 @@
-# TrackerRadar Alpha – verbindlicher schlanker Plan
+# TrackerRadar Alpha — Lean Product Plan
 
-## Produktentscheidung
+[Official SC LABS website](https://sclabs.uk/)
 
-TrackerRadar Alpha wird zunächst als portable, lokale Windows-App umgesetzt.
+## Product decision
 
-- Oberfläche: native WPF-Oberfläche im SC-LABS-Stil
-- Laufzeit: vorhandenes Windows PowerShell 5.1 und .NET Desktop Runtime
-- Installation: für Alpha nicht erforderlich
-- Start: Doppelklick auf `Start-TrackerRadar.cmd`
-- Daten: ausschließlich lokal im Projektordner
-- Telemetrie/Cloud: keine
-- Administration: Read-only-Betrieb ohne Administratorrechte
+TrackerRadar is delivered first as a portable, local Windows application.
 
-## Warum zunächst ohne Installer
+- Interface: native WPF interface in the SC LABS visual language
+- Runtime: Windows PowerShell 5.1 and the Windows desktop runtime already available on the system
+- Installation: not required for the alpha
+- Launch: console-free `Start-TrackerRadar.vbs`, with `Start-TrackerRadar.cmd` as a compatible fallback
+- Data: stored locally inside the application folder
+- Telemetry and cloud backend: none
+- Privileges: the main interface runs without persistent administrator rights; protected actions use visible Windows UAC only after explicit confirmation
 
-Ein Installer würde in der ersten Iteration zusätzliche Arbeit für Signierung, Aktualisierung, Deinstallation, erhöhte Rechte und Paketpflege verursachen. Die portable Alpha kann direkt geprüft werden. Nach erfolgreichem Funktions- und UX-Test wird daraus ein kleiner Installer gebaut.
+## Why the alpha remains portable
 
-## Alpha-Funktionsumfang
+A portable build keeps installation, update, removal and signing complexity out of the early validation cycle. It can be copied to another Windows computer, verified against its SHA-256 value and removed without leaving a permanent service or background component.
 
-1. Aktive externe TCP-Verbindungen nach Anwendung anzeigen.
-2. Zieladresse, Zielport, Prozess, PID und Programmpfad zuordnen.
-3. Prozesse aus Temp-/Download- oder ungewöhnlichen Pfaden hervorheben.
-4. Script-Hosts mit externen Verbindungen hervorheben.
-5. Autostarts erfassen und auffällige Einträge melden.
-6. Digitale Signatur ausgewählter auffälliger Programme prüfen.
-7. Wenige, gebündelte Befunde statt Ereignisflut anzeigen.
-8. Manuelles Sofort-Scannen und schonende automatische Aktualisierung.
-9. Lokalen JSON-Scanbericht erzeugen.
-10. Selbsttest und Ressourcenmessung bereitstellen.
+## Current alpha scope
 
-## Bewusste Grenzen der Alpha
+1. Show active external TCP connections by application.
+2. Associate destination address, port, process, PID and executable path.
+3. Explain common providers and purposes using local information and conservative heuristics.
+4. Establish a local baseline and highlight newly observed activity.
+5. Detect new, changed and removed common startup entries.
+6. Present a small number of grouped findings instead of an event flood.
+7. Run a deliberately started five-second file-access scan for selected user-folder categories without storing file contents or individual file names.
+8. Provide a complete local German and English interface.
+9. Offer explicit, reversible outbound firewall blocking and selected startup disable actions through the Change Vault.
+10. Produce local JSON reports, self-tests and resource measurements.
 
-- Kein eigener Kernel-Treiber.
-- Kein TLS-Aufbrechen und kein Root-Zertifikat.
-- Keine Inhaltsanalyse persönlicher Dateien.
-- Keine vollständige Erkennung von Lesezugriffen auf beliebige Dateien.
-- Keine automatischen Löschungen oder Windows-Debloat-Aktionen.
-- Noch keine aktive Blockierung; zunächst verlässliche Read-only-Erkennung.
+## Deliberate limitations
 
-Datei-Lesezugriffe benötigen für eine zuverlässige Zuordnung später ETW-/Minifilter- oder Audit-Technik. In der Alpha werden deshalb Netzwerk, Prozesse, Autostarts und auffällige Ausführungspfade zuverlässig priorisiert, ohne falsche Vollständigkeit zu behaupten.
+- No custom kernel driver.
+- No TLS interception and no root certificate.
+- No analysis of personal file contents.
+- No claim of complete or continuous file-read detection.
+- No automatic deletion, cleanup or Windows debloat action.
+- No claim that every connection or file-system event is malicious.
+- No replacement for antivirus, EDR or professional incident response.
 
-## Qualitätsziele
+## Quality targets
 
-- Leerlauf-RAM möglichst unter 150 MB auf dem Zielsystem.
-- Scanintervall mindestens 8 Sekunden.
-- Maximal 25 Aktivitäten und 8 Befunde gleichzeitig in der Übersicht.
-- Kein dauerhaftes CPU-Polling.
-- Keine Netzwerkverbindung durch TrackerRadar selbst.
-- Verständliche Sprache ohne SOC-/Firewall-Fachjargon.
+- Working set below 180 MB on the primary test system where practical.
+- No permanent CPU polling loop.
+- No account, cloud backend or product telemetry.
+- No silent elevation.
+- Clear language without unnecessary SOC or firewall jargon.
+- Every protected change must be explicit, logged and reversible where supported.
 
-## Prüf- und Verbesserungsloop
+## Verification loop
 
-1. Syntax- und Selbsttest.
-2. Live-Snapshot auf der Workstation.
-3. GUI-Starttest.
-4. CPU-/RAM-Messung.
-5. Scanbericht auf Plausibilität prüfen.
-6. Fehler und unnötige Last korrigieren.
-7. Tests erneut ausführen.
-8. Ergebnis und bekannte Grenzen dokumentieren.
+1. Run syntax and component self-tests.
+2. Capture a live local snapshot.
+3. Start the real WPF interface.
+4. Measure CPU and memory use.
+5. Review report plausibility and privacy boundaries.
+6. Correct errors and unnecessary load.
+7. Repeat the complete regression suite.
+8. Build the portable ZIP and verify it from a fresh extraction.
+9. Confirm the SHA-256 value and absence of residual firewall rules or test artifacts.
+10. Document verified results and remaining limitations.
 
-## Nächste Produktstufe nach Nutzerprüfung
+## Remaining hardening work
 
-Nur nach erfolgreicher Alpha-Prüfung:
-
-- Internetzugriff pro App über Windows Firewall blockieren.
-- Autostart sicher deaktivieren und zurücknehmen.
-- Schutz ausgewählter sensibler Ordner erweitern.
-- Signierter Installer und saubere Deinstallation.
+- Test the portable package on a second Windows computer.
+- Document ownership and redistribution rights for all branding assets.
+- Add current release screenshots.
+- Update the TrackerRadar page on the official SC LABS website.
+- Consider a signed installer only after the portable alpha has completed broader validation.

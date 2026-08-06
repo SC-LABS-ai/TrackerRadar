@@ -6,6 +6,8 @@
 
 **Local-first Windows visibility for unexpected application behaviour.**
 
+[Official SC LABS website](https://sclabs.uk/)
+
 TrackerRadar shows which applications maintain external TCP connections, where they connect, which common startup entries change, and which applications access selected user-folder categories during a deliberately started short scan. It also provides two explicitly confirmed, reversible controls without a permanent privileged service.
 
 ## Status
@@ -47,9 +49,9 @@ No installation is required for the alpha.
 
 1. Download or clone the repository.
 2. Double-click `Start-TrackerRadar.vbs` for a console-free start. `Start-TrackerRadar.cmd` is kept as a compatible fallback and delegates to the same hidden launcher.
-3. Select **Deutsch** or **English** from the language selector in the upper-right corner.
-4. Select **Jetzt prüfen / Scan now** for a network and startup snapshot.
-5. Open **Dateizugriffe / File access** and start the five-second user-folder scan when needed.
+3. Select English or German from the language selector in the upper-right corner.
+4. Select **Scan now** for a network and startup snapshot.
+5. Open **File access** and start the five-second user-folder scan when needed.
 6. Confirm the normal Windows UAC prompt when starting the file-access scan or a protected control action.
 
 TrackerRadar does not elevate silently. The main interface runs without persistent administrator rights. The standard launcher hides only the PowerShell console; the TrackerRadar window remains visible and testable.
@@ -111,14 +113,8 @@ See [PRIVACY.md](PRIVACY.md) and [SECURITY.md](SECURITY.md). Scan data and local
 
 ## Public release preparation
 
-Public repository: `https://github.com/SC-LABS-ai/TrackerRadar`. Versioned alpha builds are published as GitHub prereleases with a matching SHA-256 file. See [PUBLIC-RELEASE-CHECKLIST.md](PUBLIC-RELEASE-CHECKLIST.md) for the remaining hardening work.
+Public repository: [SC-LABS-ai/TrackerRadar](https://github.com/SC-LABS-ai/TrackerRadar). Versioned alpha builds are published as GitHub prereleases with a matching SHA-256 file. See [PUBLIC-RELEASE-CHECKLIST.md](PUBLIC-RELEASE-CHECKLIST.md) for the remaining hardening work.
 
 ## Rights
 
 Copyright 2026 SC LABS. All rights reserved. TrackerRadar is proprietary freeware, not open source. Permitted private, internal-business and evaluation use is defined in [LICENSE.md](LICENSE.md); branding and redistribution remain restricted. See also [NOTICE.md](NOTICE.md).
-
----
-
-## Kurzbeschreibung auf Deutsch
-
-TrackerRadar ist eine portable, lokale Windows-App im SC-LABS-Design. Sie zeigt aktive externe Verbindungen, erklärt bekannte Ziele, erkennt neue Aktivitäten gegenüber einer lokalen Baseline und führt einen begrenzten Sieben-Tage-Verlauf. Die vollständige Oberfläche kann lokal zwischen Deutsch und Englisch umgeschaltet werden; die Auswahl wird ausschließlich lokal gespeichert. Der Standardstart blendet das PowerShell-Konsolenfenster aus und zeigt nur die TrackerRadar-Oberfläche. Version 0.5 ergänzt einen bewusst gestarteten Fünf-Sekunden-Scan für ausgewählte Benutzerordner und Browserprofile. Angezeigt werden nur gebündelte Prozess-, Ordner- und Zugriffsinformationen; Dateiinhalte und einzelne Dateinamen werden nicht im Ergebnis gespeichert. Firewall- und Autostartaktionen bleiben bestätigungspflichtig und rückgängig machbar. In Aktivitäten zeigt derselbe Button anhand des bestätigten Regelzustands entweder **Internetzugriff blockieren** oder **Internetzugriff freigeben**. Eine Freigabe wird nur für eine exakte TrackerRadar-Regel mit passendem Change-Vault-Eintrag angeboten. Die Seitenleiste verlinkt `sclabs.uk`; MalwareRadar und PrivacyRadar stehen als Footer-Links bereit und öffnen sich erst nach einem bewussten Klick. TrackerRadar bleibt proprietäre Freeware; Weiterverteilung, Rebranding und kommerzielle Nutzung über die Lizenzrechte hinaus bleiben SC LABS vorbehalten.
