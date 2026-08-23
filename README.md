@@ -14,7 +14,7 @@ TrackerRadar shows which applications maintain external TCP connections, where t
 
 **Version:** `0.5.5-alpha`
 
-**State:** local visibility and safe-control prototype, not a complete security product
+**State:** testable alpha for controlled evaluation; local visibility and safe-control prototype, not a complete security product
 
 **Tested on:** Windows 11 Pro with Windows PowerShell 5.1
 
