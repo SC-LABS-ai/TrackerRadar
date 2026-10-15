@@ -8,6 +8,8 @@
 
 [Official SC LABS website](https://sclabs.uk/)
 
+For a simple starting point before using this alpha, see [how to inspect Windows applications' internet connections](https://sclabs.uk/guides/windows-app-internet-connections/) with Resource Monitor, process IDs and netstat. A connection alone does not establish tracking or malware.
+
 TrackerRadar shows which applications maintain external TCP connections, where they connect, which common startup entries change, and which applications access selected user-folder categories during a deliberately started short scan. It also provides two explicitly confirmed, reversible controls without a permanent privileged service.
 
 ## Status
